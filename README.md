@@ -4,7 +4,7 @@ This project involves producing Collaborative app for managing projects and reac
 
 ## Requirements
 
-- Node.js >= 18.18 (20 LTS recommended)
+- Node.js >= 18.18 (22 LTS recommended)
 - A MongoDB database (Prisma uses the MongoDB connector)
 - Accounts for [Clerk](https://clerk.com) (with Organizations enabled), [Stripe](https://stripe.com) and [Unsplash](https://unsplash.com/developers)
 
