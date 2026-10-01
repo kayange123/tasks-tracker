@@ -16,14 +16,24 @@ const CardModal = () => {
   const isOpen = useCardModal((state) => state.isOpen);
   const onClose = useCardModal((state) => state.onClose);
 
-  const { data: cardData } = useQuery<CardWithList>({
+  // gcTime 0 drops a card's cache when the modal closes, so reopening
+  // always loads fresh data behind a skeleton instead of the last copy
+  const { data: card } = useQuery<CardWithList>({
     queryKey: ["card", id],
     queryFn: () => fetcher(`/api/cards/${id}`),
+    enabled: !!id,
+    gcTime: 0,
   });
-  const { data: cardLogs } = useQuery<AuditLog[]>({
+  const { data: logs } = useQuery<AuditLog[]>({
     queryKey: ["card-log", id],
     queryFn: () => fetcher(`/api/cards/${id}/logs`),
+    enabled: !!id,
+    gcTime: 0,
   });
+
+  // Only ever render data that belongs to the card being opened
+  const cardData = card?.id === id ? card : undefined;
+  const cardLogs = cardData ? logs : undefined;
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
