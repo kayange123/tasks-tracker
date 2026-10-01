@@ -1,5 +1,6 @@
 "use client";
 
+import { features } from "@/config/site";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 // Follows the system setting until the user picks a theme; the choice is
@@ -11,6 +12,7 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
+      forcedTheme={features.themeSwitching ? undefined : "light"}
     >
       {children}
     </NextThemesProvider>
