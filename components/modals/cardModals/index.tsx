@@ -36,7 +36,7 @@ const CardModal = () => {
   const cardLogs = cardData ? logs : undefined;
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-3xl">
         {!cardData ? (
           <ModalHeader.Skeleton />
         ) : (
