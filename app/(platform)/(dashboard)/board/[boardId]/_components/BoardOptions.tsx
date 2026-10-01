@@ -11,13 +11,21 @@ import {
 import { useAction } from "@/hooks/useActions";
 import { MoreHorizontal, Trash2, X } from "lucide-react";
 import { notify } from "@/lib/notify";
+import { useRouter } from "next/navigation";
 
 interface BoardOptionsProps {
   id: string;
 }
 
 const BoardOptions = ({ id }: BoardOptionsProps) => {
+  const router = useRouter();
   const { execute, isLoading } = useAction(deleteBoard, {
+    onSuccess(board) {
+      router.push(`/organization/${board.orgId}`);
+      notify.success("Board deleted", {
+        description: `“${board.title}” was removed.`,
+      });
+    },
     onError(error) {
       notify.error("Couldn’t delete the board", { description: error });
     },
