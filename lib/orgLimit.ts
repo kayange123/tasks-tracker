@@ -1,69 +1,59 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import { Prisma } from "@prisma/client";
 import { db } from "./prisma";
 import { MAX_FREE_BOARDS } from "@/constants/boards";
 
-export const incrementAvailableCount = async () => {
-  const { orgId } = auth();
+const getOrgId = async () => {
+  const { orgId } = await auth();
 
   if (!orgId) {
     throw new Error("Unauthorized");
   }
+  return orgId;
+};
+
+const ensureOrgLimit = async (orgId: string) => {
   try {
-    const orgLimit = await db.orgLimit.findUnique({ where: { orgId } });
-
-    if (orgLimit) {
-      await db.orgLimit.update({
-        where: { orgId },
-        data: { count: orgLimit.count + 1 },
-      });
-    } else {
-      await db.orgLimit.create({ data: { orgId, count: 1 } });
-    }
-  } catch (error) {
-    throw new Error("Failed to envoke");
-  }
-};
-
-export const decrementAvailableCount = async () => {
-  const { orgId } = auth();
-
-  if (!orgId) {
-    throw new Error("Unauthorized");
-  }
-
-  const orgLimit = await db.orgLimit.findUnique({ where: { orgId } });
-
-  if (orgLimit) {
-    await db.orgLimit.update({
+    await db.orgLimit.upsert({
       where: { orgId },
-      data: { count: orgLimit.count > 0 ? orgLimit.count - 1 : 0 },
+      create: { orgId, count: 0 },
+      update: {},
     });
-  } else {
-    await db.orgLimit.create({ data: { orgId, count: 1 } });
+  } catch (error) {
+    // A concurrent request created the record first
+    if (
+      !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+      error.code !== "P2002"
+    ) {
+      throw error;
+    }
   }
 };
 
-export const hasAvailableCount = async () => {
-  const { orgId } = auth();
+// Atomically takes a free board slot. Returns false when the org is at its limit.
+export const reserveBoardSlot = async (): Promise<boolean> => {
+  const orgId = await getOrgId();
+  await ensureOrgLimit(orgId);
 
-  if (!orgId) {
-    throw new Error("Unauthorized");
-  }
+  const { count } = await db.orgLimit.updateMany({
+    where: { orgId, count: { lt: MAX_FREE_BOARDS } },
+    data: { count: { increment: 1 } },
+  });
 
-  const orgLimit = await db.orgLimit.findUnique({ where: { orgId } });
-
-  if (!orgLimit || orgLimit.count < MAX_FREE_BOARDS) {
-    return true;
-  } else {
-    return false;
-  }
+  return count === 1;
 };
+
+export const releaseBoardSlot = async () => {
+  const orgId = await getOrgId();
+
+  await db.orgLimit.updateMany({
+    where: { orgId, count: { gt: 0 } },
+    data: { count: { decrement: 1 } },
+  });
+};
+
 export const getAvailableCount = async (): Promise<number> => {
-  const { orgId } = auth();
-
-  if (!orgId) {
-    throw new Error("Unauthorized");
-  }
+  const orgId = await getOrgId();
 
   const orgLimit = await db.orgLimit.findUnique({ where: { orgId } });
 

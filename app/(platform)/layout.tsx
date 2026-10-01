@@ -5,7 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 const PlatformLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <ClerkProvider>
+    <ClerkProvider afterSignOutUrl="/">
       <QueryProvider>
         <ToasterProvider />
         <ModalProvider />

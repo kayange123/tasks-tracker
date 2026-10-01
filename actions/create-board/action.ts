@@ -2,7 +2,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/prisma";
-import { incrementAvailableCount, hasAvailableCount } from "@/lib/orgLimit";
+import { reserveBoardSlot, releaseBoardSlot } from "@/lib/orgLimit";
 import { revalidatePath } from "next/cache";
 import { createActions } from "@/lib/createActions";
 import { createBoardSchema } from "./schema";
@@ -10,10 +10,17 @@ import { createAuditLog } from "@/lib/createAuditLogs";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { checkSubscription } from "@/lib/subscription";
 
+const isUnsplashUrl = (value: string, hosts: string[]) => {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && hosts.includes(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
 export const handler = async (data: InputType): Promise<ReturnType> => {
-  const { userId, orgId } = auth();
-  const canCreateBoard = await hasAvailableCount();
-  const isPro = await checkSubscription();
+  const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {
     return {
@@ -21,30 +28,35 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
     };
   }
 
-  if (!canCreateBoard && !isPro) {
+  const { title, image } = data;
+  const [imageId, imageThumbUrl, imageFullUrl, imageLinkHTML, imageUserName] =
+    image.split("|");
+
+  if (
+    !title ||
+    !imageId ||
+    !imageUserName ||
+    !isUnsplashUrl(imageThumbUrl, ["images.unsplash.com"]) ||
+    !isUnsplashUrl(imageFullUrl, ["images.unsplash.com"]) ||
+    !isUnsplashUrl(imageLinkHTML, ["unsplash.com"])
+  ) {
+    return {
+      error: "No image is provided. Failed to create board",
+    };
+  }
+
+  const isPro = await checkSubscription();
+
+  // Pro orgs are unlimited; free orgs take a slot atomically so concurrent
+  // requests can't exceed the limit
+  if (!isPro && !(await reserveBoardSlot())) {
     return {
       error:
         "You have reached your limit of free boards. Please upgrade your plan to create more boards",
     };
   }
 
-  const { title, image } = data;
-  const [imageId, imageThumbUrl, imageFullUrl, imageLinkHTML, imageUserName] =
-    image.split("|");
   let board;
-
-  if (
-    !title ||
-    !imageId ||
-    !imageThumbUrl ||
-    !imageFullUrl ||
-    !imageLinkHTML ||
-    !imageUserName
-  ) {
-    return {
-      error: "No image is provided. Failed to create board",
-    };
-  }
   try {
     board = await db.board.create({
       data: {
@@ -57,24 +69,23 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
         imageUserName,
       },
     });
-
-    //Increase # of boards iff isNotPro
-    if (!isPro) {
-      await incrementAvailableCount();
-    }
-
-    await createAuditLog({
-      entityTitle: board.title,
-      entityType: ENTITY_TYPE.BOARD,
-      entityId: board.id,
-      action: ACTION.CREATE,
-    });
   } catch (error) {
+    if (!isPro) {
+      await releaseBoardSlot();
+    }
     return {
       error: "Failed to create board",
     };
   }
-  revalidatePath(`board/${board.id}`);
+
+  await createAuditLog({
+    entityTitle: board.title,
+    entityType: ENTITY_TYPE.BOARD,
+    entityId: board.id,
+    action: ACTION.CREATE,
+  });
+
+  revalidatePath(`/organization/${orgId}`);
   return { data: board };
 };
 

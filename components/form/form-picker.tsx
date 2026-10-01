@@ -1,6 +1,5 @@
 "use client";
 
-import { unsplash } from "@/lib/unsplash";
 import { cn } from "@/lib/utils";
 import { Check, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -23,14 +22,10 @@ const FormPicker = ({ id, errors }: FormPickerProps) => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const result = await unsplash.photos.getRandom({
-          collectionIds: ["317099"],
-          count: 9,
-        });
+        const response = await fetch("/api/images");
 
-        if (result && result.response) {
-          const unsplashImages = result.response as Array<Record<string, any>>;
-          setImages(unsplashImages);
+        if (response.ok) {
+          setImages(await response.json());
         } else {
           console.log("Failed to get images");
         }
@@ -59,7 +54,7 @@ const FormPicker = ({ id, errors }: FormPickerProps) => {
           <div
             className={cn(
               "cursor-pointer relative aspect-video group hover:opacity-75 transition bg-muted",
-              pending && "opacity-50 cursor-auto hover:opacity-50"
+              pending && "opacity-50 cursor-auto hover:opacity-50",
             )}
             key={image.id}
             onClick={() => {

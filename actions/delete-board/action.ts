@@ -9,11 +9,11 @@ import { DeleteBoard } from "./schema";
 import { redirect } from "next/navigation";
 import { createAuditLog } from "@/lib/createAuditLogs";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
-import { decrementAvailableCount } from "@/lib/orgLimit";
+import { releaseBoardSlot } from "@/lib/orgLimit";
 import { checkSubscription } from "@/lib/subscription";
 
 export const handler = async (data: InputType) => {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return {
       error: "Unauthorized",
@@ -31,7 +31,7 @@ export const handler = async (data: InputType) => {
     });
 
     if (!isPro) {
-      await decrementAvailableCount();
+      await releaseBoardSlot();
     }
 
     await createAuditLog({

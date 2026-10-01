@@ -15,7 +15,9 @@ interface SidebarProps {
 const Sidebar = ({ storageKey }: SidebarProps) => {
   const [expanded, setExpanded] = useLocalStorage<Record<string, any>>(
     storageKey ?? "t-sidebar-state",
-    {}
+    {},
+    // Read storage after mount so server and client render the same markup
+    { initializeWithValue: false }
   );
   const { organization: activeOrganization, isLoaded: isLoadedOrg } =
     useOrganization();

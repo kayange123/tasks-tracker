@@ -10,7 +10,7 @@ import { createAuditLog } from "@/lib/createAuditLogs";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
 export const handler = async (data: InputType): Promise<ReturnType> => {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return {
       error: "Unauthorized",
@@ -43,7 +43,7 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
     const newOrder: number = lastCard ? lastCard.order + 1 : 1;
 
     //Create the card
-    const card = await db.card.create({
+    card = await db.card.create({
       data: {
         title,
         listId,
