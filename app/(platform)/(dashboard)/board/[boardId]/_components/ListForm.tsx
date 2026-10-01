@@ -62,7 +62,7 @@ const ListForm = () => {
         <form
           action={onSubmit}
           ref={formRef}
-          className=" p-3 bg-white space-y-4 shadow-sm"
+          className=" p-3 bg-white space-y-4 shadow-xs"
         >
           <FormInput
             errors={fieldErrors}

@@ -58,7 +58,7 @@ const BoardTitleForm = ({ title, id }: BoardTitleFormProps) => {
     <form action={onSubmit} ref={formRef} className="flex items-center gap-x-2">
       <FormInput
         ref={inputRef}
-        className="text-lg font-bold px-[7px] py-1 h-7 bg-transparent focus-visible:outline-none focus-visible:ring-transparent"
+        className="text-lg font-bold px-[7px] py-1 h-7 bg-transparent focus-visible:outline-hidden focus-visible:ring-transparent"
         id="title"
         onBlur={onBlur}
         defaultValue={formTitle}

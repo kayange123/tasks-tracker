@@ -68,7 +68,7 @@ const FormPopover = ({
         </p>
         <PopoverClose ref={closeRef} asChild>
           <Button
-            className="h-auto w-auto p-2 absolute top-2 right-2 outline-none"
+            className="h-auto w-auto p-2 absolute top-2 right-2 outline-hidden"
             variant={"ghost"}
           >
             <X className="h-4 w-4" />
