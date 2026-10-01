@@ -33,7 +33,7 @@
     "react-hot-toast": "^2.4.1",
     "stripe": "^14.10.0",
     "tailwind-merge": "^2.0.0",
-    "tailwindcss-animate": "^1.0.7",
+    "tw-animate-css": "^1.4.0",
     "unsplash-js": "^7.0.18",
     "usehooks-ts": "^3.1.1",
     "zod": "^3.22.4",
