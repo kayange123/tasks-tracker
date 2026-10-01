@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -39,11 +39,12 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@types/node": "^20",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.6.1",
-    "eslint": "^8",
+    "eslint": "^9.39.5",
     "eslint-config-next": "^15.5.27",
     "postcss": "^8.5.28",
     "prisma": "^5.6.0",
