@@ -25,12 +25,12 @@ const MarketingPage = () => {
           headingFont.className
         )}
       >
-        <div className="mb-4 flex items-center justify-center border shadow-sm p-4 bg-amber-100 text-amber-700 rounded-xl">
+        <div className="mb-4 flex items-center justify-center border shadow-xs p-4 bg-amber-100 text-amber-700 rounded-xl">
           <Medal className="h-6 w-6 mr-2" />
           <p className="text-lg font-semibold">#1 Task Management!</p>
         </div>
         <h1 className="text-xl md:text-4xl font-bold text-center">{`Organize your team's tasks with us`}</h1>
-        <h1 className="mt-4 text-xl md:text-3xl bg-gradient-to-r from-fuchsia-600 to-pink-700 text-white px-4 p-2 rounded-md w-fit">
+        <h1 className="mt-4 text-xl md:text-3xl bg-linear-to-r from-fuchsia-600 to-pink-700 text-white px-4 p-2 rounded-md w-fit">
           Move Forward
         </h1>
       </div>
