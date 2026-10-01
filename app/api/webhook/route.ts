@@ -14,52 +14,60 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET as string
+      process.env.STRIPE_WEBHOOK_SECRET as string,
     );
   } catch (error) {
     return new NextResponse("Webhook Error", { status: 400 });
   }
 
-  const session = event.data.object as Stripe.Checkout.Session;
-
   if (event.type === "checkout.session.completed") {
-    const subscription = await stripe.subscriptions.retrieve(
-      session.subscription as string
-    );
+    const session = event.data.object as Stripe.Checkout.Session;
 
     if (!session?.metadata?.orgId) {
       return new NextResponse("No Org ID", { status: 400 });
     }
 
-    await db.orgSubscription.create({
-      data: {
-        orgId: session.metadata.orgId,
-        stripeSubscriptionId: subscription.id,
-        stripeCustomerId: subscription.customer as string,
-        stripePriceId: subscription.items.data[0].price.id,
-        stripeCurrentPeriodEnd: new Date(
-          subscription?.current_period_end * 1000
-        ),
-      },
+    const subscription = await stripe.subscriptions.retrieve(
+      session.subscription as string,
+    );
+    const subscriptionData = {
+      stripeSubscriptionId: subscription.id,
+      stripeCustomerId: subscription.customer as string,
+      stripePriceId: subscription.items.data[0].price.id,
+      stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    };
+
+    // Upsert so an org that resubscribes after a lapse doesn't hit the
+    // unique orgId constraint
+    await db.orgSubscription.upsert({
+      where: { orgId: session.metadata.orgId },
+      create: { orgId: session.metadata.orgId, ...subscriptionData },
+      update: subscriptionData,
     });
   }
 
   if (event.type === "invoice.payment_succeeded") {
-    const subscription = await stripe.subscriptions.retrieve(
-      session.subscription as string
-    );
+    const invoice = event.data.object as Stripe.Invoice;
 
-    await db.orgSubscription.update({
-      data: {
-        stripePriceId: subscription.items.data[0].price.id,
-        stripeCurrentPeriodEnd: new Date(
-          subscription?.current_period_end * 1000
-        ),
-      },
-      where: {
-        stripeSubscriptionId: subscription?.id,
-      },
-    });
+    if (invoice.subscription) {
+      const subscription = await stripe.subscriptions.retrieve(
+        typeof invoice.subscription === "string"
+          ? invoice.subscription
+          : invoice.subscription.id,
+      );
+
+      // updateMany doesn't throw when the first invoice arrives before
+      // checkout.session.completed has created the record
+      await db.orgSubscription.updateMany({
+        where: { stripeSubscriptionId: subscription.id },
+        data: {
+          stripePriceId: subscription.items.data[0].price.id,
+          stripeCurrentPeriodEnd: new Date(
+            subscription.current_period_end * 1000,
+          ),
+        },
+      });
+    }
   }
 
   return new NextResponse(null, { status: 200 });
