@@ -8,6 +8,7 @@ import { db } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { currentUser, auth } from "@clerk/nextjs";
 import { revalidatePath } from "next/cache";
+import { checkSubscription } from "@/lib/subscription";
 
 export const handler = async () => {
   const user = await currentUser();
@@ -26,7 +27,11 @@ export const handler = async () => {
       where: { orgId },
     });
 
-    if (orgSubscription && orgSubscription.stripeCustomerId) {
+    const isPro = await checkSubscription();
+
+    // The billing portal only manages existing subscriptions, so a lapsed
+    // org goes back through checkout (reusing its Stripe customer)
+    if (isPro && orgSubscription?.stripeCustomerId) {
       const stripeSession = await stripe.billingPortal.sessions.create({
         customer: orgSubscription.stripeCustomerId,
         return_url: settingsUrl,
@@ -39,7 +44,9 @@ export const handler = async () => {
         payment_method_types: ["card"],
         mode: "subscription",
         billing_address_collection: "auto",
-        customer_email: user?.emailAddresses?.[0]?.emailAddress,
+        ...(orgSubscription?.stripeCustomerId
+          ? { customer: orgSubscription.stripeCustomerId }
+          : { customer_email: user?.emailAddresses?.[0]?.emailAddress }),
         line_items: [
           {
             price_data: {
