@@ -26,8 +26,11 @@ export const createAuditLog = async (props: AuditProps) => {
         entityType,
         action,
         userId: user.id,
-        userName: user.firstName + " " + user?.lastName,
-        userImage: user?.imageUrl,
+        userName:
+          [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+          user.username ||
+          "Unknown user",
+        userImage: user.imageUrl,
       },
     });
   } catch (error) {
