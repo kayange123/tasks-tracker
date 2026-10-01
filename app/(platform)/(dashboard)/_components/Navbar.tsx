@@ -9,29 +9,11 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 const Navbar = () => {
   return (
-    <nav className="fixed z-50 top-0 w-full px-2 md:px-4 border-b h-14 flex items-center shadow-xs bg-white">
+    <nav className="fixed top-0 z-50 flex h-14 w-full items-center gap-2 border-b bg-card px-3 md:gap-3 md:px-5">
       <MobileSidebar />
-      <div className="flex items-center gap-x-4">
-        <div className="hidden md:flex">
-          <Logo />
-        </div>
-        <FormPopover align="start" side="bottom" sideOffset={18}>
-          <Button
-            variant="primary"
-            size="sm"
-            className="rounded-md hidden md:block h-auto py-1.5 px-2"
-          >
-            Create
-          </Button>
-        </FormPopover>
-        <FormPopover>
-          <Button size="sm" className="rounded-md block md:hidden">
-            <Plus size={20} />
-          </Button>
-        </FormPopover>
-      </div>
-      <div className="ml-auto flex items-center gap-x-2">
-        <ThemeToggle />
+      {/* Same width as the sidebar, so the switcher lines up with content */}
+      <Logo compact className="md:w-[228px]" />
+      <div className="hidden sm:flex">
         <OrganizationSwitcher
           hidePersonal
           afterCreateOrganizationUrl="/organization/:id"
@@ -39,21 +21,25 @@ const Navbar = () => {
           afterSelectOrganizationUrl="/organization/:id"
           appearance={{
             elements: {
-              rootBox: {
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              },
+              rootBox: "flex items-center",
+              organizationSwitcherTrigger:
+                "h-9! rounded-md! border! border-border! px-2.5! hover:bg-accent!",
             },
           }}
         />
+      </div>
+      <div className="ml-auto flex items-center gap-1.5 md:gap-2">
+        <FormPopover align="end" side="bottom" sideOffset={12}>
+          <Button size="sm" aria-label="Create board">
+            <Plus />
+            <span className="hidden sm:inline">Create board</span>
+          </Button>
+        </FormPopover>
+        <ThemeToggle />
         <UserButton
           appearance={{
             elements: {
-              avatarBox: {
-                width: 30,
-                height: 30,
-              },
+              avatarBox: "size-8",
             },
           }}
         />

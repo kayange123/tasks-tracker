@@ -2,13 +2,15 @@ import Sidebar from "../_components/Sidebar";
 
 const OrganizationLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="pt-20 md:pt-22 px-4 max-w-7xl 2xl:max-w-(--breakpoint-xl) mx-auto">
-      <div className="flex gap-x-6">
-        <div className="w-64 shrink-0 hidden md:block">
-          <Sidebar />
+    <div className="min-h-full pt-14">
+      <aside className="fixed top-14 bottom-0 left-0 hidden w-[260px] overflow-y-auto border-r bg-card md:block">
+        <Sidebar />
+      </aside>
+      <main className="md:pl-[260px]">
+        <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-10 md:py-8">
+          {children}
         </div>
-        {children}
-      </div>
+      </main>
     </div>
   );
 };

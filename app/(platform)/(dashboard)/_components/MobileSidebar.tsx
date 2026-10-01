@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useMobileSidebar } from "@/hooks/useMobileView";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import Sidebar from "./Sidebar";
 
 const MobileSidebar = () => {
@@ -27,15 +27,22 @@ const MobileSidebar = () => {
     <>
       <Button
         onClick={onOpen}
-        className="block md:hidden mr-1"
-        size="sm"
         variant="ghost"
+        size="icon"
+        aria-label="Open navigation"
+        className="md:hidden"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="size-5" />
       </Button>
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="left" className="p-2 pt-10">
-          <Sidebar storageKey="t-sidebar-mobile-state" />
+        <SheetContent
+          side="left"
+          className="w-[280px] gap-0 p-0 sm:max-w-[280px]"
+        >
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <div className="h-full pt-8">
+            <Sidebar storageKey="t-sidebar-mobile-state" />
+          </div>
         </SheetContent>
       </Sheet>
     </>
