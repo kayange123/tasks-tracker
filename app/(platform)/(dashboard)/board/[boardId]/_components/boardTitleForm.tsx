@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAction } from "@/hooks/useActions";
 import { useRouter } from "next/navigation";
 import { ElementRef, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 
 interface BoardTitleFormProps {
   id: string;
@@ -22,13 +22,15 @@ const BoardTitleForm = ({ title, id }: BoardTitleFormProps) => {
 
   const { execute } = useAction(updateBoard, {
     onSuccess(data) {
-      toast.success(`Board "${data?.title}" updated`);
+      notify.success("Board renamed", {
+        description: `Now called “${data?.title}”.`,
+      });
       router.refresh();
       setFormTitle(data?.title);
       disableEditing();
     },
     onError(error) {
-      toast.error("Error updating board");
+      notify.error("Couldn’t rename the board", { description: error });
     },
   });
   const enableEditing = () => {

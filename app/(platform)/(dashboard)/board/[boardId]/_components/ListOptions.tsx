@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAction } from "@/hooks/useActions";
 import { MoreHorizontal, X } from "lucide-react";
 import { ElementRef, useRef } from "react";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 
 interface ListOptionsProps {
   onAddCard: () => void;
@@ -25,22 +25,26 @@ const ListOptions = ({ onAddCard, id, boardId }: ListOptionsProps) => {
   const closeRef = useRef<ElementRef<"button">>(null);
   const { execute } = useAction(deleteList, {
     onSuccess(data) {
-      toast.success(`List "${data?.title}" deleted`);
+      notify.success("List deleted", {
+        description: `“${data?.title}” and its cards were removed.`,
+      });
       closeRef.current?.click();
     },
     onError(error) {
-      toast.error(error);
+      notify.error(error);
     },
   });
 
   //The action to copy list
   const { execute: executeCopy } = useAction(copyList, {
     onSuccess(data) {
-      toast.success(`Copied "${data?.title}" successfully`);
+      notify.success("List copied", {
+        description: `“${data?.title}” was added to the board.`,
+      });
       closeRef.current?.click();
     },
     onError(error) {
-      toast.error(error);
+      notify.error(error);
     },
   });
 

@@ -8,7 +8,7 @@ import ListItem from "./ListItem";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { useAction } from "@/hooks/useActions";
 import { updateListOrder } from "@/actions/update-list-order/action";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 import { updateCardOrder } from "@/actions/update-card-order/action";
 
 interface ListContainerProps {
@@ -18,22 +18,20 @@ interface ListContainerProps {
 const ListContainer = ({ boardId, list }: ListContainerProps) => {
   const [orderedList, setOrderedList] = useState(list);
   const { execute: executeUpdateListOrder } = useAction(updateListOrder, {
-    onSuccess: () => {
-      toast.success("lists reordered");
-    },
-    onError(error) {
+    onError() {
       // Drop the optimistic order and show the saved one again
       setOrderedList(list);
-      toast.error(error);
+      notify.error("Couldn’t save the new list order", {
+        description: "Your changes were undone. Try again.",
+      });
     },
   });
   const { execute: executeUpdateCardOrder } = useAction(updateCardOrder, {
-    onSuccess: () => {
-      toast.success("cards reordered");
-    },
-    onError(error) {
+    onError() {
       setOrderedList(list);
-      toast.error(error);
+      notify.error("Couldn’t save the new card order", {
+        description: "Your changes were undone. Try again.",
+      });
     },
   });
 
