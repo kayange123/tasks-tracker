@@ -4,15 +4,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useOrganization } from "@clerk/nextjs";
 import { CreditCard } from "lucide-react";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 
 interface InfoProps {
   isPro: boolean;
 }
 
 const Info = ({ isPro }: InfoProps) => {
+  const { organizationId } = useParams<{ organizationId: string }>();
   const { organization, isLoaded } = useOrganization();
 
-  if (!isLoaded) {
+  // Until the client switches, the active org is still the previous one
+  if (!isLoaded || organization?.id !== organizationId) {
     return <Info.Skeleton />;
   }
   return (

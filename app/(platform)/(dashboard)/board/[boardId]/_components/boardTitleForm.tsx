@@ -22,7 +22,7 @@ const BoardTitleForm = ({ title, id }: BoardTitleFormProps) => {
 
   const { execute } = useAction(updateBoard, {
     onSuccess(data) {
-      toast.success(`Board "${title}" updated`);
+      toast.success(`Board "${data?.title}" updated`);
       router.refresh();
       setFormTitle(data?.title);
       disableEditing();

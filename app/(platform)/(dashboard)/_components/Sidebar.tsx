@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
 import NavItem, { TOrganization } from "./NavItem";
+import { useParams } from "next/navigation";
 
 interface SidebarProps {
   storageKey?: string;
@@ -19,8 +20,9 @@ const Sidebar = ({ storageKey }: SidebarProps) => {
     // Read storage after mount so server and client render the same markup
     { initializeWithValue: false }
   );
-  const { organization: activeOrganization, isLoaded: isLoadedOrg } =
-    useOrganization();
+  // Highlight the organization being viewed, not the session's active one
+  const { organizationId } = useParams<{ organizationId?: string }>();
+  const { isLoaded: isLoadedOrg } = useOrganization();
   const { userMemberships, isLoaded: isLoadedOrgList } = useOrganizationList({
     userMemberships: {
       infinite: true,
@@ -79,7 +81,7 @@ const Sidebar = ({ storageKey }: SidebarProps) => {
         {userMemberships?.data?.map(({ organization }) => (
           <NavItem
             key={organization.id}
-            isActive={activeOrganization?.id == organization.id}
+            isActive={organizationId === organization.id}
             isExpanded={expanded[organization?.id]}
             organization={organization as TOrganization}
             onExpand={onExpand}

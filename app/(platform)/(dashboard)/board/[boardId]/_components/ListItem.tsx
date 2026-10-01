@@ -40,6 +40,8 @@ const ListItem = ({ index, list }: ListItemProps) => {
             className="w-full rounded-md bg-[#f1f2f4] shadow-md pb-2"
           >
             <ListHeader
+              // Remount when the saved title changes so local state can't go stale
+              key={`${list.id}:${list.title}`}
               onAddCard={enableEditing}
               title={list.title}
               id={list.id}

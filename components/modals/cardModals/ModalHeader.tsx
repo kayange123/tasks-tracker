@@ -8,7 +8,7 @@ import { CardWithList } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { Layout } from "lucide-react";
 import { useParams } from "next/navigation";
-import { ElementRef, useRef, useState } from "react";
+import { ElementRef, useRef } from "react";
 import toast from "react-hot-toast";
 
 interface ModalHeaderProps {
@@ -19,7 +19,6 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
   const query = useQueryClient();
   const params = useParams();
   const inputRef = useRef<ElementRef<"input">>(null);
-  const [title, setTitle] = useState(data?.title);
 
   const { execute } = useAction(updateCard, {
     onSuccess(card) {
@@ -31,7 +30,6 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
       });
 
       toast.success(`Renamed to "${card?.title}"`);
-      setTitle(card?.title);
     },
   });
   const onBlur = () => {
@@ -42,7 +40,7 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
     const formTitle = form.get("title") as string;
     const boardId = params.boardId as string;
 
-    if (formTitle === title) return;
+    if (formTitle === data.title) return;
 
     execute({
       title: formTitle,
@@ -56,10 +54,13 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
       <div className="w-full">
         <form action={onSubmit}>
           <FormInput
+            // Remount when the saved title changes so the field never
+            // keeps a value from before the latest refetch
+            key={data.title}
             ref={inputRef}
             onBlur={onBlur}
             id="title"
-            defaultValue={title}
+            defaultValue={data.title}
             className="font-semibold text-xl px-1 text-neutral-700 bg-transparent relative -left-1.5 border-transparent w-[95%] bg-white focus-visible:border-input mb-0.5 truncate"
           />
         </form>
