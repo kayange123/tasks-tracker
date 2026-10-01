@@ -37,19 +37,27 @@ const CardModal = () => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        {!cardData ? <ModalHeader.Skeleton /> : <ModalHeader data={cardData} />}
+        {!cardData ? (
+          <ModalHeader.Skeleton />
+        ) : (
+          <ModalHeader key={cardData.id} data={cardData} />
+        )}
         <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4">
           <div className="col-span-3">
             <div className="w-full space-y-6">
               {!cardData ? (
                 <Description.Skeleton />
               ) : (
-                <Description data={cardData} />
+                <Description key={cardData.id} data={cardData} />
               )}
               {!cardLogs ? <Activity.Skeleton /> : <Activity logs={cardLogs} />}
             </div>
           </div>
-          {!cardData ? <Actions.Skeleton /> : <Actions data={cardData} />}
+          {!cardData ? (
+            <Actions.Skeleton />
+          ) : (
+            <Actions key={cardData.id} data={cardData} />
+          )}
         </div>
       </DialogContent>
     </Dialog>
