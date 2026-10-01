@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MAX_FREE_BOARDS } from "@/constants/boards";
 import { getAvailableCount } from "@/lib/orgLimit";
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { checkSubscription } from "@/lib/subscription";
 import { auth } from "@clerk/nextjs/server";
 import { HelpCircle, User } from "lucide-react";
@@ -19,6 +20,7 @@ const BoardList = async () => {
     boards = await db.board.findMany({
       where: {
         orgId,
+        ...active,
       },
       orderBy: {
         createdAt: "desc",

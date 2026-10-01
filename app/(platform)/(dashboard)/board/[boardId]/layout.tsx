@@ -1,4 +1,5 @@
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import BoardNavbar from "./_components/BoardNavbar";
@@ -17,6 +18,7 @@ export async function generateMetadata({
     where: {
       id: boardId,
       orgId,
+      ...active,
     },
   });
   return { title: board?.title || "Board" };
@@ -38,6 +40,7 @@ const BoardIdLayout = async ({
     where: {
       id: boardId,
       orgId,
+      ...active,
     },
   });
 

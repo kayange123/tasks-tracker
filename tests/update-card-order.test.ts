@@ -25,6 +25,7 @@ describe("update-card-order handler", () => {
       where: {
         id: { in: ["list_1", "list_other"] },
         boardId: "board_1",
+        deletedAt: { isSet: false },
         board: { orgId: "org_1" },
       },
     });

@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { revalidatePath } from "next/cache";
 import { createActions } from "@/lib/createActions";
 import { UpdateCard } from "./schema";
@@ -25,6 +26,7 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
       },
       where: {
         id,
+        ...active,
         list: {
           board: {
             orgId,
