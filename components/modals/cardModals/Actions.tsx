@@ -2,6 +2,7 @@
 
 import { copyCard } from "@/actions/copy-card/action";
 import { deleteCard } from "@/actions/delete-card/action";
+import { restoreCard } from "@/actions/restore-card/action";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAction } from "@/hooks/useActions";
@@ -35,11 +36,24 @@ const Actions = ({ data }: ActionsProps) => {
   const { execute: executeDeleteCard, isLoading: isLoadDelete } = useAction(
     deleteCard,
     {
-      onSuccess(data) {
-        notify.success("Card deleted", {
-          description: `“${data?.title}” was removed.`,
-        });
+      onSuccess(card) {
+        const boardId = params.boardId as string;
         CardModal.onClose();
+        notify.undo("Card deleted", {
+          description: `“${card.title}” was removed.`,
+          onUndo: async () => {
+            const result = await restoreCard({ id: card.id, boardId });
+            if (result.error) {
+              notify.error("Couldn’t restore the card", {
+                description: result.error,
+              });
+              return;
+            }
+            notify.success("Card restored", {
+              description: `“${card.title}” is back.`,
+            });
+          },
+        });
       },
       onError(error) {
         notify.error(error);
