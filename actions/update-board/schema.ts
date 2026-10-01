@@ -8,6 +8,7 @@ export const UpdateBoard = z.object({
     })
     .min(3, {
       message: "Title should be more than 3 characters",
-    }),
+    })
+    .max(100, { message: "Title should be at most 100 characters" }),
   id: z.string(),
 });
