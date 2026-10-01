@@ -13,7 +13,7 @@ import { releaseBoardSlot } from "@/lib/orgLimit";
 import { checkSubscription } from "@/lib/subscription";
 
 export const handler = async (data: InputType) => {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return {
       error: "Unauthorized",

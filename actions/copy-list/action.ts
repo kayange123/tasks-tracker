@@ -10,7 +10,7 @@ import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { createAuditLog } from "@/lib/createAuditLogs";
 
 export const handler = async (data: InputType) => {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return {
       error: "Unauthorized",

@@ -45,11 +45,15 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
       }
     };
 
-    useOnClickOutside(formRef, disableEditing);
+    // usehooks-ts types predate React 19 nullable refs
+    useOnClickOutside(
+      formRef as React.RefObject<HTMLFormElement>,
+      disableEditing,
+    );
     useEventListener("keydown", onKeyDown);
 
     const onTextAreaKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (
-      e
+      e,
     ) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -100,7 +104,7 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
         </Button>
       </div>
     );
-  }
+  },
 );
 CardForm.displayName = "CardForm";
 

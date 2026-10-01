@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import { db } from "./prisma";
 import { MAX_FREE_BOARDS } from "@/constants/boards";
 
-const getOrgId = () => {
-  const { orgId } = auth();
+const getOrgId = async () => {
+  const { orgId } = await auth();
 
   if (!orgId) {
     throw new Error("Unauthorized");
@@ -32,7 +32,7 @@ const ensureOrgLimit = async (orgId: string) => {
 
 // Atomically takes a free board slot. Returns false when the org is at its limit.
 export const reserveBoardSlot = async (): Promise<boolean> => {
-  const orgId = getOrgId();
+  const orgId = await getOrgId();
   await ensureOrgLimit(orgId);
 
   const { count } = await db.orgLimit.updateMany({
@@ -44,7 +44,7 @@ export const reserveBoardSlot = async (): Promise<boolean> => {
 };
 
 export const releaseBoardSlot = async () => {
-  const orgId = getOrgId();
+  const orgId = await getOrgId();
 
   await db.orgLimit.updateMany({
     where: { orgId, count: { gt: 0 } },
@@ -53,7 +53,7 @@ export const releaseBoardSlot = async () => {
 };
 
 export const getAvailableCount = async (): Promise<number> => {
-  const orgId = getOrgId();
+  const orgId = await getOrgId();
 
   const orgLimit = await db.orgLimit.findUnique({ where: { orgId } });
 

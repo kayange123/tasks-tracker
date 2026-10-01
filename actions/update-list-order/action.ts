@@ -8,7 +8,7 @@ import { createActions } from "@/lib/createActions";
 import { UpdateListOrder } from "./schema";
 
 export const handler = async (data: InputType): Promise<ReturnType> => {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return {
       error: "Unauthorized",
@@ -29,7 +29,7 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
             orgId,
           },
         },
-      })
+      }),
     );
 
     lists = await db.$transaction(transaction);

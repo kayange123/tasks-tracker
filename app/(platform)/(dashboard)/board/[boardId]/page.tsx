@@ -5,12 +5,13 @@ import ListContainer from "./_components/ListContainer";
 import { ListWithCards } from "@/types";
 
 interface BoardIdPageProps {
-  params: {
+  params: Promise<{
     boardId: string;
-  };
+  }>;
 }
-const BoardIdPage = async ({ params: { boardId } }: BoardIdPageProps) => {
-  const { orgId } = auth();
+const BoardIdPage = async ({ params }: BoardIdPageProps) => {
+  const { boardId } = await params;
+  const { orgId } = await auth();
   if (!orgId) redirect("/select-org");
   const list: Array<ListWithCards> = await db.list.findMany({
     where: {

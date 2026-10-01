@@ -1,10 +1,10 @@
 import { unsplash } from "@/lib/unsplash";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // Proxies Unsplash so the access key never reaches the browser
 export async function GET() {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) {
     return new NextResponse("Unauthorized", { status: 401 });
   }

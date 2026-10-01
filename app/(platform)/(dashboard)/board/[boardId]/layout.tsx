@@ -1,20 +1,21 @@
 import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import BoardNavbar from "./_components/BoardNavbar";
 
 export async function generateMetadata({
   params,
 }: {
-  params: { boardId: string };
+  params: Promise<{ boardId: string }>;
 }) {
-  const { orgId } = auth();
+  const { boardId } = await params;
+  const { orgId } = await auth();
   if (!orgId) {
     return { title: "Board" };
   }
   const board = await db.board.findUnique({
     where: {
-      id: params?.boardId,
+      id: boardId,
       orgId,
     },
   });
@@ -23,12 +24,13 @@ export async function generateMetadata({
 
 const BoardIdLayout = async ({
   children,
-  params: { boardId },
+  params,
 }: {
   children: React.ReactNode;
-  params: { boardId: string };
+  params: Promise<{ boardId: string }>;
 }) => {
-  const { orgId } = auth();
+  const { boardId } = await params;
+  const { orgId } = await auth();
   if (!orgId) redirect("/select-org");
   if (!boardId) redirect(`/organization/${orgId}`);
 

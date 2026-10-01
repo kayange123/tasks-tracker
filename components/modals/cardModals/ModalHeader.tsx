@@ -42,7 +42,7 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
     const formTitle = form.get("title") as string;
     const boardId = params.boardId as string;
 
-    if (formTitle === title) return null;
+    if (formTitle === title) return;
 
     execute({
       title: formTitle,

@@ -6,13 +6,13 @@ import { StripeRedirect } from "./schema";
 import { absoluteUrl } from "@/lib/utils";
 import { db } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { currentUser, auth } from "@clerk/nextjs";
+import { currentUser, auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { checkSubscription } from "@/lib/subscription";
 
 export const handler = async () => {
   const user = await currentUser();
-  const { orgId } = auth();
+  const { orgId } = await auth();
   if (!user || !orgId) {
     return {
       error: "Unauthorized",
