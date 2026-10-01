@@ -13,7 +13,7 @@ import React, {
   forwardRef,
   useRef,
 } from "react";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 import { useEventListener, useOnClickOutside } from "usehooks-ts";
 
 interface CardFormProps {
@@ -30,12 +30,14 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
 
     const { execute, fieldErrors } = useAction(createCard, {
       onSuccess(data) {
-        toast.success(`card "${data?.title}" created`);
+        notify.success("Card created", {
+          description: `“${data?.title}” was added to the list.`,
+        });
         formRef.current?.reset();
         disableEditing();
       },
       onError(error) {
-        toast.error(error);
+        notify.error(error);
       },
     });
 
@@ -48,12 +50,12 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
     // usehooks-ts types predate React 19 nullable refs
     useOnClickOutside(
       formRef as React.RefObject<HTMLFormElement>,
-      disableEditing,
+      disableEditing
     );
     useEventListener("keydown", onKeyDown);
 
     const onTextAreaKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (
-      e,
+      e
     ) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -104,7 +106,7 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
         </Button>
       </div>
     );
-  },
+  }
 );
 CardForm.displayName = "CardForm";
 

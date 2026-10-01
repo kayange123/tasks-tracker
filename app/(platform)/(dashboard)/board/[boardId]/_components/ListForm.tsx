@@ -9,7 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import FormSubmit from "@/components/form/FormSubmit";
 import { useAction } from "@/hooks/useActions";
 import { createList } from "@/actions/create-list/action";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 
 const ListForm = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -20,10 +20,12 @@ const ListForm = () => {
 
   const { execute, fieldErrors } = useAction(createList, {
     onError(error) {
-      toast.error(error);
+      notify.error(error);
     },
     onSuccess(data) {
-      toast.success(`list "${data?.title}" created`);
+      notify.success("List created", {
+        description: `“${data?.title}” was added to the board.`,
+      });
       disableEditing();
       router.refresh();
     },
@@ -54,7 +56,7 @@ const ListForm = () => {
   // usehooks-ts types predate React 19 nullable refs
   useOnClickOutside(
     formRef as React.RefObject<HTMLFormElement>,
-    disableEditing,
+    disableEditing
   );
   return (
     <div className="w-full md:max-w-xs">

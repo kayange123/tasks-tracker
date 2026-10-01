@@ -4,7 +4,7 @@ import { updateList } from "@/actions/update-list/action";
 import FormInput from "@/components/form/FormInput";
 import { useAction } from "@/hooks/useActions";
 import { ElementRef, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 import { useEventListener } from "usehooks-ts";
 import ListOptions from "./ListOptions";
 
@@ -33,7 +33,9 @@ const ListHeader = ({ id, title, boardId, onAddCard }: ListHeaderProps) => {
   };
   const { execute, fieldErrors } = useAction(updateList, {
     onSuccess(data) {
-      toast.success(`List "${data?.title}" updated`);
+      notify.success("List renamed", {
+        description: `Now called “${data?.title}”.`,
+      });
       setListTitle(data?.title);
       disableEditing();
     },

@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Layout } from "lucide-react";
 import { useParams } from "next/navigation";
 import { ElementRef, useRef } from "react";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 
 interface ModalHeaderProps {
   data: CardWithList;
@@ -29,7 +29,9 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
         queryKey: ["card-log", data?.id],
       });
 
-      toast.success(`Renamed to "${card?.title}"`);
+      notify.success("Card renamed", {
+        description: `Now called “${card?.title}”.`,
+      });
     },
   });
   const onBlur = () => {

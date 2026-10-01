@@ -6,18 +6,20 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import { useAction } from "@/hooks/useActions";
 import { stripeRedirect } from "@/actions/stripe-redirect/action";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 
 const ProModal = () => {
   const proModal = useProModal();
 
   const { execute, isLoading } = useAction(stripeRedirect, {
     onSuccess(data) {
-      toast.loading("Redirecting to stripe...");
+      notify.loading("Redirecting to Stripe…", {
+        description: "Opening secure checkout.",
+      });
       window.location.href = data;
     },
     onError(error) {
-      toast.error(error);
+      notify.error(error);
     },
   });
 

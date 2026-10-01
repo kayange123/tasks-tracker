@@ -9,7 +9,7 @@ import { useCardModal } from "@/hooks/useCardModal";
 import { CardWithList } from "@/types";
 import { Copy, Trash2 } from "lucide-react";
 import { useParams } from "next/navigation";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 
 interface ActionsProps {
   data: CardWithList;
@@ -22,11 +22,13 @@ const Actions = ({ data }: ActionsProps) => {
     copyCard,
     {
       onSuccess(data) {
-        toast.success(`card "${data?.title}" copied`);
+        notify.success("Card copied", {
+          description: `“${data?.title}” was added to the list.`,
+        });
         CardModal.onClose();
       },
       onError(error) {
-        toast.error(error);
+        notify.error(error);
       },
     }
   );
@@ -34,11 +36,13 @@ const Actions = ({ data }: ActionsProps) => {
     deleteCard,
     {
       onSuccess(data) {
-        toast.success(`card "${data?.title}" deleted`);
+        notify.success("Card deleted", {
+          description: `“${data?.title}” was removed.`,
+        });
         CardModal.onClose();
       },
       onError(error) {
-        toast.error(error);
+        notify.error(error);
       },
     }
   );
