@@ -11,7 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AlignLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { ElementRef, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 import { useEventListener, useOnClickOutside } from "usehooks-ts";
 
 interface DescriptionProps {
@@ -49,10 +49,10 @@ const Description = ({ data }: DescriptionProps) => {
         queryKey: ["card-log", data?.id],
       });
       disableEditing();
-      toast.success(`card updated`);
+      notify.success("Description saved");
     },
     onError(error) {
-      toast.error(error);
+      notify.error(error);
     },
   });
 
@@ -60,7 +60,7 @@ const Description = ({ data }: DescriptionProps) => {
   // usehooks-ts types predate React 19 nullable refs
   useOnClickOutside(
     formRef as React.RefObject<HTMLFormElement>,
-    disableEditing,
+    disableEditing
   );
 
   const onSubmit = (form: FormData) => {
