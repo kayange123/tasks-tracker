@@ -1,5 +1,6 @@
 import Info from "./_components/Info";
 import BoardList from "./_components/BoardList";
+import RecentActivity from "./_components/RecentActivity";
 import { Suspense } from "react";
 import { checkSubscription } from "@/lib/subscription";
 import { auth } from "@clerk/nextjs/server";
@@ -20,6 +21,9 @@ const OrganizationPage = async () => {
       <Info isPro={isPro} boardCount={boardCount} />
       <Suspense fallback={<BoardList.Skeleton />}>
         <BoardList />
+      </Suspense>
+      <Suspense fallback={<RecentActivity.Skeleton />}>
+        <RecentActivity />
       </Suspense>
     </div>
   );

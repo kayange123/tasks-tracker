@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import BoardList from "./BoardList";
+import RecentActivity from "./RecentActivity";
 
 // Placeholder for organization pages while they load or while the
 // organization in the URL is being activated
@@ -14,6 +15,7 @@ const OrganizationSkeleton = () => {
         </div>
       </div>
       <BoardList.Skeleton />
+      <RecentActivity.Skeleton />
     </div>
   );
 };
