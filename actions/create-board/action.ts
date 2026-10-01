@@ -10,6 +10,15 @@ import { createAuditLog } from "@/lib/createAuditLogs";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { checkSubscription } from "@/lib/subscription";
 
+const isUnsplashUrl = (value: string, hosts: string[]) => {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && hosts.includes(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
 export const handler = async (data: InputType): Promise<ReturnType> => {
   const { userId, orgId } = auth();
 
@@ -26,10 +35,10 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
   if (
     !title ||
     !imageId ||
-    !imageThumbUrl ||
-    !imageFullUrl ||
-    !imageLinkHTML ||
-    !imageUserName
+    !imageUserName ||
+    !isUnsplashUrl(imageThumbUrl, ["images.unsplash.com"]) ||
+    !isUnsplashUrl(imageFullUrl, ["images.unsplash.com"]) ||
+    !isUnsplashUrl(imageLinkHTML, ["unsplash.com"])
   ) {
     return {
       error: "No image is provided. Failed to create board",
