@@ -10,6 +10,7 @@ const model = () => ({
   upsert: vi.fn(),
   delete: vi.fn(),
   count: vi.fn(),
+  deleteMany: vi.fn(),
 });
 
 // Stands in for the Prisma client exported from @/lib/prisma

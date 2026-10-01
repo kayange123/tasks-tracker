@@ -7,6 +7,8 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/webhook(.*)",
+  // Authenticated with CRON_SECRET instead of a Clerk session
+  "/api/cron(.*)",
 ]);
 
 export default clerkMiddleware(
@@ -34,7 +36,7 @@ export default clerkMiddleware(
     organizationSyncOptions: {
       organizationPatterns: ["/organization/:id", "/organization/:id/(.*)"],
     },
-  },
+  }
 );
 
 export const config = {
