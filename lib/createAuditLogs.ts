@@ -31,6 +31,7 @@ export const createAuditLog = async (props: AuditProps) => {
       },
     });
   } catch (error) {
-    throw new Error("Failed to create logs");
+    // Audit logging must never fail the mutation that already succeeded
+    console.error("Failed to create audit log", error);
   }
 };
