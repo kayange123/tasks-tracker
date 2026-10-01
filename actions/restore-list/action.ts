@@ -3,10 +3,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/prisma";
-import { active } from "@/lib/softDelete";
+import { restored } from "@/lib/softDelete";
 import { revalidatePath } from "next/cache";
 import { createActions } from "@/lib/createActions";
-import { DeleteList } from "./schema";
+import { RestoreList } from "./schema";
 import { createAuditLog } from "@/lib/createAuditLogs";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
@@ -17,34 +17,38 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Unauthorized",
     };
   }
-
   const { id, boardId } = data;
-  // One timestamp for the list and its cards, so a restore brings back
-  // exactly what was deleted here
-  const deletedAt = new Date();
-
   let list;
   try {
+    const deleted = await db.list.findFirst({
+      where: {
+        id,
+        boardId,
+        deletedAt: { isSet: true },
+        board: { orgId },
+      },
+      include: { board: { select: { deletedAt: true } } },
+    });
+
+    if (!deleted?.deletedAt) {
+      return { error: "List not found" };
+    }
+    if (deleted.board.deletedAt) {
+      return { error: "Restore the board this list was on first" };
+    }
+
+    // Only cards deleted together with the list come back; cards deleted
+    // on their own earlier stay deleted
     [list] = await db.$transaction([
-      db.list.update({
-        where: {
-          id,
-          boardId,
-          ...active,
-          board: {
-            orgId,
-          },
-        },
-        data: { deletedAt },
-      }),
+      db.list.update({ where: { id }, data: restored }),
       db.card.updateMany({
-        where: { listId: id, ...active },
-        data: { deletedAt },
+        where: { listId: id, deletedAt: deleted.deletedAt },
+        data: restored,
       }),
     ]);
   } catch (error) {
     return {
-      error: "Failed to delete",
+      error: "Failed to restore list",
     };
   }
 
@@ -52,11 +56,11 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
     entityTitle: list.title,
     entityType: ENTITY_TYPE.LIST,
     entityId: list.id,
-    action: ACTION.DELETE,
+    action: ACTION.RESTORE,
   });
 
   revalidatePath(`/board/${boardId}`);
   return { data: list };
 };
 
-export const deleteList = createActions(DeleteList, handler);
+export const restoreList = createActions(RestoreList, handler);

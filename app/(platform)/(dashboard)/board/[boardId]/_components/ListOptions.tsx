@@ -2,6 +2,7 @@
 
 import { copyList } from "@/actions/copy-list/action";
 import { deleteList } from "@/actions/delete-list/action";
+import { restoreList } from "@/actions/restore-list/action";
 import FormSubmit from "@/components/form/FormSubmit";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,11 +25,23 @@ interface ListOptionsProps {
 const ListOptions = ({ onAddCard, id, boardId }: ListOptionsProps) => {
   const closeRef = useRef<ElementRef<"button">>(null);
   const { execute } = useAction(deleteList, {
-    onSuccess(data) {
-      notify.success("List deleted", {
-        description: `“${data?.title}” and its cards were removed.`,
-      });
+    onSuccess(list) {
       closeRef.current?.click();
+      notify.undo("List deleted", {
+        description: `“${list.title}” and its cards were removed.`,
+        onUndo: async () => {
+          const result = await restoreList({ id: list.id, boardId });
+          if (result.error) {
+            notify.error("Couldn’t restore the list", {
+              description: result.error,
+            });
+            return;
+          }
+          notify.success("List restored", {
+            description: `“${list.title}” and its cards are back.`,
+          });
+        },
+      });
     },
     onError(error) {
       notify.error(error);

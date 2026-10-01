@@ -3,10 +3,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/prisma";
-import { active } from "@/lib/softDelete";
+import { restored } from "@/lib/softDelete";
 import { revalidatePath } from "next/cache";
 import { createActions } from "@/lib/createActions";
-import { DeleteCard } from "./schema";
+import { RestoreCard } from "./schema";
 import { createAuditLog } from "@/lib/createAuditLogs";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
@@ -20,22 +20,26 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
   const { id, boardId } = data;
   let card;
   try {
-    // Soft delete so the card can be restored from the undo toast
-    card = await db.card.update({
+    const deleted = await db.card.findFirst({
       where: {
         id,
-        ...active,
-        list: {
-          board: {
-            orgId,
-          },
-        },
+        deletedAt: { isSet: true },
+        list: { board: { orgId } },
       },
-      data: { deletedAt: new Date() },
+      include: { list: { select: { deletedAt: true } } },
     });
+
+    if (!deleted) {
+      return { error: "Card not found" };
+    }
+    if (deleted.list.deletedAt) {
+      return { error: "Restore the list this card was in first" };
+    }
+
+    card = await db.card.update({ where: { id }, data: restored });
   } catch (error) {
     return {
-      error: "Failed to delete card",
+      error: "Failed to restore card",
     };
   }
 
@@ -43,11 +47,11 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
     entityTitle: card.title,
     entityType: ENTITY_TYPE.CARD,
     entityId: card.id,
-    action: ACTION.DELETE,
+    action: ACTION.RESTORE,
   });
 
   revalidatePath(`/board/${boardId}`);
   return { data: card };
 };
 
-export const deleteCard = createActions(DeleteCard, handler);
+export const restoreCard = createActions(RestoreCard, handler);
