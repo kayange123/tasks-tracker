@@ -43,7 +43,7 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
     const newOrder: number = lastCard ? lastCard.order + 1 : 1;
 
     //Create the card
-    const card = await db.card.create({
+    card = await db.card.create({
       data: {
         title,
         listId,
