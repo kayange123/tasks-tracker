@@ -56,7 +56,8 @@
   "overrides": {
     "next": {
       "postcss": "$postcss"
-    }
+    },
+    "deepmerge-ts": "^8.0.2"
   },
   "engines": {
     "node": ">=18.18.0"
