@@ -42,7 +42,7 @@ export const handler = async (data: InputType) => {
 
     //Find the last inserted list
     const lastList = await db.list.findFirst({
-      where: { id },
+      where: { boardId: listToCopy.boardId },
       orderBy: { order: "desc" },
       select: { order: true }, //include the card
     });
