@@ -51,7 +51,11 @@ const ListForm = () => {
     }
   };
   useEventListener("keydown", onKeyDown);
-  useOnClickOutside(formRef, disableEditing);
+  // usehooks-ts types predate React 19 nullable refs
+  useOnClickOutside(
+    formRef as React.RefObject<HTMLFormElement>,
+    disableEditing,
+  );
   return (
     <div className="w-full md:max-w-xs">
       {isEditing ? (

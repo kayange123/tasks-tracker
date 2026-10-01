@@ -8,7 +8,7 @@ import { createActions } from "@/lib/createActions";
 import { UpdateCardOrder } from "./schema";
 
 export const handler = async (data: InputType): Promise<ReturnType> => {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return {
       error: "Unauthorized",
@@ -17,6 +17,22 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
   const { items, boardId } = data;
   let updatedCards;
   try {
+    // Cards may only move into lists on this board, within this org
+    const targetListIds = Array.from(new Set(items.map((card) => card.listId)));
+    const validListCount = await db.list.count({
+      where: {
+        id: { in: targetListIds },
+        boardId,
+        board: { orgId },
+      },
+    });
+
+    if (validListCount !== targetListIds.length) {
+      return {
+        error: "List Not Found",
+      };
+    }
+
     const transaction = items.map((card) =>
       db.card.update({
         where: {
@@ -31,7 +47,7 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
           order: card.order,
           listId: card.listId,
         },
-      })
+      }),
     );
 
     updatedCards = await db.$transaction(transaction);

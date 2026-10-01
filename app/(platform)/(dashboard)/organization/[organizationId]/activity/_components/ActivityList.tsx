@@ -1,12 +1,12 @@
 import ActivityItem from "@/components/ActivityItem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { AuditLog } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 const ActivityList = async () => {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     redirect("/select-org");

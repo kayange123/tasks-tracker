@@ -10,7 +10,7 @@ import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { createAuditLog } from "@/lib/createAuditLogs";
 
 export const handler = async (data: InputType) => {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return {
       error: "Unauthorized",
@@ -42,7 +42,7 @@ export const handler = async (data: InputType) => {
 
     //Find the last inserted list
     const lastList = await db.list.findFirst({
-      where: { id },
+      where: { boardId: listToCopy.boardId },
       orderBy: { order: "desc" },
       select: { order: true }, //include the card
     });

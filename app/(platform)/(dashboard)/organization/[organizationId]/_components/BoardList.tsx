@@ -11,7 +11,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 const BoardList = async () => {
-  const { orgId } = auth();
+  const { orgId } = await auth();
   if (!orgId) redirect("/select-org");
 
   let boards;
