@@ -2,44 +2,20 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProModal } from "@/hooks/useProModal";
-import { useQuery } from "@tanstack/react-query";
+import { useUsage } from "@/hooks/useUsage";
 import { useParams } from "next/navigation";
-
-interface Usage {
-  orgId: string;
-  boards: number;
-  limit: number;
-  isPro: boolean;
-}
-
-const fetchUsage = async (organizationId: string): Promise<Usage> => {
-  const response = await fetch(`/api/organizations/${organizationId}/usage`);
-  if (!response.ok) {
-    throw new Error(`Usage request failed: ${response.status}`);
-  }
-  return response.json();
-};
 
 // Free-plan board usage for the organization in the URL
 const PlanMeter = () => {
   const { organizationId } = useParams<{ organizationId?: string }>();
   const proModal = useProModal();
 
-  const { data } = useQuery({
-    queryKey: ["usage", organizationId],
-    queryFn: () => fetchUsage(organizationId!),
-    enabled: !!organizationId,
-    // Fresh numbers on every visit; while the org switch is still in
-    // progress the API answers 409, so keep retrying briefly
-    gcTime: 0,
-    retry: 5,
-    retryDelay: 500,
-  });
+  const data = useUsage(organizationId);
 
   if (!organizationId) return null;
 
   // Only render numbers that belong to the organization being viewed
-  if (!data || data.orgId !== organizationId) {
+  if (!data) {
     return <Skeleton className="h-[104px] w-full rounded-xl" />;
   }
 
