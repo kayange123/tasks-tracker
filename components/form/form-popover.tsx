@@ -12,7 +12,7 @@ import FormInput from "./FormInput";
 import FormSubmit from "./FormSubmit";
 import { useAction } from "@/hooks/useActions";
 import { createBoard } from "@/actions/create-board/action";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
 import FormPicker from "./form-picker";
 import { useRef, ElementRef } from "react";
 import { useRouter } from "next/navigation";
@@ -36,12 +36,14 @@ const FormPopover = ({
   const closeRef = useRef<ElementRef<"button">>(null);
   const { execute, fieldErrors } = useAction(createBoard, {
     onSuccess: (data) => {
-      toast.success("Board created successfully");
+      notify.success("Board created", {
+        description: `“${data?.title}” is ready.`,
+      });
       closeRef.current?.click();
       router.push(`/board/${data?.id}`);
     },
     onError: (error) => {
-      toast.error(error);
+      notify.error(error);
       if (error.includes("upgrade")) {
         proModal.onOpen();
       }
