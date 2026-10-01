@@ -172,3 +172,25 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Undo toast countdown; pauses with sonner's timers while hovered */
+@keyframes toast-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+.toast-countdown {
+  transform-origin: left;
+  animation: toast-countdown linear forwards;
+}
+[data-sonner-toaster]:hover .toast-countdown {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-countdown {
+    animation: none;
+  }
+}
