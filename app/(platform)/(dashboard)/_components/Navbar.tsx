@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import React from "react";
 import MobileSidebar from "./MobileSidebar";
 import FormPopover from "@/components/form/form-popover";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Navbar = () => {
   return (
@@ -30,6 +31,7 @@ const Navbar = () => {
         </FormPopover>
       </div>
       <div className="ml-auto flex items-center gap-x-2">
+        <ThemeToggle />
         <OrganizationSwitcher
           hidePersonal
           afterCreateOrganizationUrl="/organization/:id"
