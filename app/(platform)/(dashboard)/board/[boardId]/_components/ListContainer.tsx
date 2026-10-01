@@ -22,6 +22,8 @@ const ListContainer = ({ boardId, list }: ListContainerProps) => {
       toast.success("lists reordered");
     },
     onError(error) {
+      // Drop the optimistic order and show the saved one again
+      setOrderedList(list);
       toast.error(error);
     },
   });
@@ -30,6 +32,7 @@ const ListContainer = ({ boardId, list }: ListContainerProps) => {
       toast.success("cards reordered");
     },
     onError(error) {
+      setOrderedList(list);
       toast.error(error);
     },
   });
@@ -66,9 +69,12 @@ const ListContainer = ({ boardId, list }: ListContainerProps) => {
     }
 
     if (type === "card") {
-      let newOrderedData = [...orderedList];
+      // Copy lists and cards so the server-provided props are never mutated
+      const newOrderedData = orderedList.map((list) => ({
+        ...list,
+        cards: [...(list.cards ?? [])],
+      }));
 
-      //Get source index
       const sourceList = newOrderedData.find(
         (list) => list.id === source.droppableId
       );
@@ -78,23 +84,12 @@ const ListContainer = ({ boardId, list }: ListContainerProps) => {
 
       if (!sourceList || !destinationList) return;
 
-      if (!destinationList.cards) {
-        destinationList.cards = [];
-      }
-      if (!sourceList.cards) {
-        sourceList.cards = [];
-      }
-
       if (source.droppableId === destination.droppableId) {
         const reorderedCards = reorder(
           sourceList.cards,
           source.index,
           destination.index
-        );
-
-        reorderedCards.forEach((card, index) => {
-          card.order = index;
-        });
+        ).map((card, index) => ({ ...card, order: index }));
 
         sourceList.cards = reorderedCards;
         setOrderedList(newOrderedData);
@@ -104,17 +99,20 @@ const ListContainer = ({ boardId, list }: ListContainerProps) => {
         const [movedCard] = sourceList.cards.splice(source.index, 1);
 
         //Assign new listId
-        movedCard.listId = destination.droppableId;
-
-        destinationList.cards.splice(destination.index, 0, movedCard);
-
-        sourceList.cards.forEach((card, index) => {
-          card.order = index;
+        destinationList.cards.splice(destination.index, 0, {
+          ...movedCard,
+          listId: destination.droppableId,
         });
 
-        destinationList.cards.forEach((card, index) => {
-          card.order = index;
-        });
+        sourceList.cards = sourceList.cards.map((card, index) => ({
+          ...card,
+          order: index,
+        }));
+        destinationList.cards = destinationList.cards.map((card, index) => ({
+          ...card,
+          order: index,
+        }));
+
         setOrderedList(newOrderedData);
         executeUpdateCardOrder({
           boardId,
@@ -135,7 +133,8 @@ const ListContainer = ({ boardId, list }: ListContainerProps) => {
               {...provided.droppableProps}
               className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4"
             >
-              {list.map((list, index) => (
+              {/* Render the optimistic order, not the last server snapshot */}
+              {orderedList.map((list, index) => (
                 <ListItem key={list.id} index={index} list={list} />
               ))}
               {provided.placeholder}
