@@ -2,55 +2,56 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrganization } from "@clerk/nextjs";
-import { CreditCard } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 
 interface InfoProps {
   isPro: boolean;
+  boardCount?: number;
 }
 
-const Info = ({ isPro }: InfoProps) => {
+const Info = ({ isPro, boardCount }: InfoProps) => {
   const { organizationId } = useParams<{ organizationId: string }>();
   const { organization, isLoaded } = useOrganization();
 
   // Until the client switches, the active org is still the previous one
-  if (!isLoaded || organization?.id !== organizationId) {
+  if (!isLoaded || !organization || organization.id !== organizationId) {
     return <Info.Skeleton />;
   }
+
+  const details = [isPro ? "Pro plan" : "Free plan"];
+  if (boardCount !== undefined) {
+    details.push(`${boardCount} ${boardCount === 1 ? "board" : "boards"}`);
+  }
+
   return (
-    <div className="flex items-center gap-x-4">
-      <div className="relative w-[60px] h-[60px]">
-        <Image
-          src={organization?.imageUrl!}
-          fill
-          className="rounded-md object-cover"
-          alt={`${organization?.name} - cover image`}
-        />
-      </div>
-      <div className="space-y-1">
-        <p className="font-semibold text-xl">{organization?.name}</p>
-        <div className="flex items-center font-semibold space-x-2 text-muted-foreground">
-          <CreditCard className="h-4 w-4 md:h-5 md:w-5" />
-          <p>{isPro ? "Pro" : "Free"}</p>
-        </div>
+    <div className="flex items-center gap-3.5">
+      <Image
+        src={organization.imageUrl}
+        alt=""
+        width={48}
+        height={48}
+        className="size-12 shrink-0 rounded-xl object-cover"
+      />
+      <div className="flex min-w-0 flex-col gap-1">
+        <h1 className="truncate text-[22px] leading-tight font-semibold tracking-tight">
+          {organization.name}
+        </h1>
+        <p className="text-[13px] text-muted-foreground">
+          {details.join(" · ")}
+        </p>
       </div>
     </div>
   );
 };
 
-Info.Skeleton = function SkeletonInfo() {
+Info.Skeleton = function InfoSkeleton() {
   return (
-    <div className="flex items-center gap-x-4">
-      <div className="relative w-[60px] h-[60px]">
-        <Skeleton className="w-full h-full absolute" />
-      </div>
-      <div className="space-y-1">
-        <Skeleton className="h-10 w-[200px]" />
-        <div className="flex items-center space-x-2">
-          <Skeleton className="h-4 w-4 md:h-5 md:w-5" />
-          <Skeleton className="h-4 w-[100px]" />
-        </div>
+    <div className="flex items-center gap-3.5" aria-busy="true">
+      <Skeleton className="size-12 shrink-0 rounded-xl" />
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-4 w-28" />
       </div>
     </div>
   );

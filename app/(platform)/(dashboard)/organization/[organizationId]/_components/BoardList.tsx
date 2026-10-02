@@ -1,98 +1,138 @@
-import Hint from "@/components/Hint";
 import FormPopover from "@/components/form/form-popover";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MAX_FREE_BOARDS } from "@/constants/boards";
 import { getAvailableCount } from "@/lib/orgLimit";
 import { db } from "@/lib/prisma";
 import { active } from "@/lib/softDelete";
 import { checkSubscription } from "@/lib/subscription";
+import { unsplashWidth } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
-import { HelpCircle, User } from "lucide-react";
+import { LayoutGrid, Plus } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
+const plural = (count: number, word: string) =>
+  `${count} ${count === 1 ? word : `${word}s`}`;
 
 const BoardList = async () => {
   const { orgId } = await auth();
   if (!orgId) redirect("/select-org");
 
-  let boards;
-  try {
-    boards = await db.board.findMany({
-      where: {
-        orgId,
-        ...active,
+  const [boards, availableCount, isPro] = await Promise.all([
+    db.board.findMany({
+      where: { orgId, ...active },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        imageThumbUrl: true,
+        lists: {
+          where: active,
+          select: { _count: { select: { cards: { where: active } } } },
+        },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  } catch (error) {
-    //console.log(error);
-  }
+    }),
+    getAvailableCount(),
+    checkSubscription(),
+  ]);
 
-  const availableCount = await getAvailableCount();
-  const isPro = await checkSubscription();
+  const remaining = Math.max(0, MAX_FREE_BOARDS - availableCount);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center font-semibold text-lg text-neutral-700">
-        <User className="w-6 h-6 mr-2" />
-        <p>Your boards</p>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {boards &&
-          boards.map((board) => (
-            <Link
-              key={board.id}
-              href={`/board/${board.id}`}
-              className="group relative aspect-video bg-no-repeat bg-center bg-cover bg-sky-700 rounded-sm w-full h-full overflow-hidden p-2"
-              style={{ backgroundImage: `url(${board.imageThumbUrl})` }}
-            >
-              <div className="absolute inset-0 bg-black/30 transition group-hover:bg-black/40" />
-              <p className="text-white text-sm truncate text-muted-foreground relative">
-                {board.title}
-              </p>
-            </Link>
-          ))}
-        <FormPopover side="bottom" sideOffset={10}>
-          <div
-            className="aspect-video p-4 relative hover:opacity-75 transition items-center justify-center h-full w-full bg-muted rounded-sm flex flex-col gap-y-1"
-            role="button"
-          >
-            <p className="text-sm text-muted-foreground">Create your board</p>
-            <span className="text-xs">
-              {isPro
-                ? "Unlimited boards"
-                : `${MAX_FREE_BOARDS - availableCount} remaining`}
-            </span>
-            {!isPro && (
-              <Hint
-                description={`Free workspaces can have atmost 5 boards, For unlimited boards upgrade this workspace`}
-                sideOffset={40}
+    <section className="flex flex-col gap-3.5">
+      <h2 className="text-[15px] font-semibold">Your boards</h2>
+      {boards.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed px-6 py-12 text-center">
+          <span className="flex size-12 items-center justify-center rounded-xl bg-primary-soft text-primary-text">
+            <LayoutGrid aria-hidden className="size-5" />
+          </span>
+          <h3 className="text-base font-semibold">No boards yet</h3>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Create a board to organize your team&apos;s work into lists and
+            cards.
+          </p>
+          <FormPopover side="bottom" align="center" sideOffset={8}>
+            <Button className="mt-1">
+              <Plus />
+              Create your first board
+            </Button>
+          </FormPopover>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {boards.map((board) => {
+            const cards = board.lists.reduce(
+              (total, list) => total + list._count.cards,
+              0
+            );
+            return (
+              <Link
+                key={board.id}
+                href={`/board/${board.id}`}
+                className="group flex flex-col overflow-hidden rounded-xl border bg-card outline-none transition-shadow hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
-                <HelpCircle className="w-4 h-4 absolute bottom-2 right-2" />
-              </Hint>
-            )}
-          </div>
-        </FormPopover>
-      </div>
-    </div>
+                <div className="relative h-24 overflow-hidden bg-muted">
+                  <Image
+                    src={unsplashWidth(board.imageThumbUrl, 640)}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1280px) 25vw, (min-width: 480px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+                  />
+                </div>
+                <div className="flex flex-col gap-1 px-3.5 py-3">
+                  <span className="truncate text-sm font-semibold">
+                    {board.title}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {plural(board.lists.length, "list")} ·{" "}
+                    {plural(cards, "card")}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+          <FormPopover side="bottom" align="center" sideOffset={8}>
+            <button
+              type="button"
+              className="flex min-h-[154px] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-input text-muted-foreground outline-none transition-colors hover:border-primary hover:bg-primary-soft focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              <Plus aria-hidden className="size-5" />
+              <span className="text-sm font-medium text-foreground">
+                Create new board
+              </span>
+              <span className="text-xs">
+                {isPro ? "Unlimited boards" : `${remaining} remaining`}
+              </span>
+            </button>
+          </FormPopover>
+        </div>
+      )}
+    </section>
   );
 };
 
 BoardList.Skeleton = function BoardListSkeleton() {
   return (
-    <div className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-      <Skeleton className="aspect-video w-full h-full p-2" />
-      <Skeleton className="aspect-video w-full h-full p-2" />
-      <Skeleton className="aspect-video w-full h-full p-2" />
-      <Skeleton className="aspect-video w-full h-full p-2" />
-      <Skeleton className="aspect-video w-full h-full p-2" />
-      <Skeleton className="aspect-video w-full h-full p-2" />
-      <Skeleton className="aspect-video w-full h-full p-2" />
-      <Skeleton className="aspect-video w-full h-full p-2" />
-      <Skeleton className="aspect-video w-full h-full p-2" />
-    </div>
+    <section className="flex flex-col gap-3.5" aria-busy="true">
+      <Skeleton className="h-5 w-28" />
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div
+            key={index}
+            className="overflow-hidden rounded-xl border bg-card"
+          >
+            <Skeleton className="h-24 rounded-none" />
+            <div className="flex flex-col gap-2 px-3.5 py-3">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 };
 
