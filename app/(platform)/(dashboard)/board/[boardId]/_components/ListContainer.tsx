@@ -121,26 +121,27 @@ const ListContainer = ({ boardId, list }: ListContainerProps) => {
   };
 
   return (
-    <div className="pt-24 w-full">
-      <ListForm />
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="lists" type="list" direction="horizontal">
-          {(provided) => (
-            <ol
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4"
-            >
-              {/* Render the optimistic order, not the last server snapshot */}
-              {orderedList.map((list, index) => (
-                <ListItem key={list.id} index={index} list={list} />
-              ))}
-              {provided.placeholder}
-            </ol>
-          )}
-        </Droppable>
-      </DragDropContext>
-    </div>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Droppable droppableId="lists" type="list" direction="horizontal">
+        {(provided) => (
+          <ol
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            aria-label="Lists"
+            className="flex h-full items-start gap-4 overflow-x-auto px-4 py-6 md:px-7"
+          >
+            {/* Render the optimistic order, not the last server snapshot */}
+            {orderedList.map((list, index) => (
+              <ListItem key={list.id} index={index} list={list} />
+            ))}
+            {provided.placeholder}
+            <li className="w-72 shrink-0">
+              <ListForm />
+            </li>
+          </ol>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 };
 
