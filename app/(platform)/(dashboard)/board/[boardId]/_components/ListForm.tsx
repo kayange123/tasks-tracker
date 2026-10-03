@@ -77,7 +77,7 @@ const ListForm = () => {
           <div className="flex items-center justify-between gap-x-1">
             <FormSubmit className="h-8">Add list</FormSubmit>
             <Button
-              type="submit"
+              type="button"
               onClick={disableEditing}
               size="sm"
               variant="ghost"

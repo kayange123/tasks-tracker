@@ -42,7 +42,8 @@ const ListHeader = ({ id, title, boardId, onAddCard }: ListHeaderProps) => {
   });
   const onkeyDown = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
-      formRef.current?.submit();
+      // Cancel the rename; the native submit() would bypass the action
+      disableEditing();
     }
   };
 

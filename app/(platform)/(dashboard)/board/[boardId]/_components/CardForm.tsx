@@ -85,6 +85,7 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
         <div className="flex items-center justify-between gap-x-1">
           <FormSubmit>Add Card</FormSubmit>
           <Button
+            type="button"
             onClick={disableEditing}
             size="sm"
             variant="ghost"
