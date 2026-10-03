@@ -47,13 +47,9 @@ const BoardIdLayout = async ({
   if (!board) notFound();
 
   return (
-    <div
-      className="relative h-full bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${board.imageFullUrl})` }}
-    >
+    <div className="flex h-full flex-col pt-14">
       <BoardNavbar board={board} />
-      <div className="bg-black/10 absolute inset-0" />
-      <main className="w-full pt-8 relative">{children}</main>
+      <main className="relative min-h-0 flex-1">{children}</main>
     </div>
   );
 };

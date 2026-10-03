@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 interface FormInputProps {
   id: string;
   label?: string;
+  // Keep the label for screen readers only, e.g. inline title editors
+  labelHidden?: boolean;
   type?: string;
   placeholder?: string;
   required?: boolean;
@@ -27,6 +29,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     {
       id,
       label,
+      labelHidden,
       placeholder,
       type,
       required,
@@ -50,7 +53,10 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <Label htmlFor={id} className="text-[13px] font-medium">
+          <Label
+            htmlFor={id}
+            className={cn("text-[13px] font-medium", labelHidden && "sr-only")}
+          >
             {label}
           </Label>
         )}
