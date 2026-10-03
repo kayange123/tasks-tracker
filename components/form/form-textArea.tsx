@@ -5,11 +5,12 @@ import { Label } from "../ui/label";
 import { cn } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
 import { useFormStatus } from "react-dom";
-import { XCircle } from "lucide-react";
 
 interface FormTextAreaProps {
   id: string;
   label?: string;
+  // Keep the label for screen readers only, e.g. inline forms
+  labelHidden?: boolean;
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -24,6 +25,7 @@ const FormTextArea = forwardRef<HTMLTextAreaElement, FormTextAreaProps>(
   (
     {
       label,
+      labelHidden,
       placeholder,
       id,
       required,
@@ -38,47 +40,38 @@ const FormTextArea = forwardRef<HTMLTextAreaElement, FormTextAreaProps>(
     ref
   ) => {
     const { pending } = useFormStatus();
+    const fieldErrors = errors?.[id];
+    const isInvalid = !!fieldErrors?.length;
+
     return (
-      <div className="space-y-2 w-full">
-        <div className="space-y-1 w-full">
-          {label && (
-            <Label
-              htmlFor={id}
-              className="text-xs font-semibold text-neutral-700"
-            >
-              {label}
-            </Label>
-          )}
-          <Textarea
-            ref={ref}
-            onClick={onClick}
-            placeholder={placeholder}
-            onBlur={onBlur}
-            onKeyDown={onKeyDown}
-            required={required}
-            name={id}
-            id={id}
-            disabled={pending || disabled}
-            className={cn(
-              "resize-none focus-visible:ring-0 focus-visible:ring-offset-0 ring-0 focus:ring-0 outline-hidden shadow-xs",
-              className
-            )}
-            aria-describedby={`${id}-error`}
-            defaultValue={defaultValue}
-          />
-        </div>
-        {errors && (
-          <div
-            className="mt-2 text-xs text-red-500"
-            id={`${id}-error`}
-            aria-live="polite"
+      <div className="flex w-full flex-col gap-1.5">
+        {label && (
+          <Label
+            htmlFor={id}
+            className={cn("text-[13px] font-medium", labelHidden && "sr-only")}
           >
-            {errors?.[id]?.map((error: string) => (
-              <p
-                key={error}
-                className="flex items-center font-medium p-2 border border-red-500 bg-rose-500/10 rounded-sm"
-              >
-                <XCircle className="h-4 w-4 mr-2" />
+            {label}
+          </Label>
+        )}
+        <Textarea
+          ref={ref}
+          onClick={onClick}
+          placeholder={placeholder}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
+          required={required}
+          name={id}
+          id={id}
+          disabled={pending || disabled}
+          aria-invalid={isInvalid || undefined}
+          aria-describedby={isInvalid ? `${id}-error` : undefined}
+          className={cn("resize-none text-sm", className)}
+          defaultValue={defaultValue}
+        />
+        {isInvalid && (
+          <div id={`${id}-error`} aria-live="polite">
+            {fieldErrors.map((error) => (
+              <p key={error} className="text-xs text-destructive-text">
                 {error}
               </p>
             ))}
