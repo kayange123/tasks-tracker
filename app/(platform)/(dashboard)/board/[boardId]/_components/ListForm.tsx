@@ -10,6 +10,7 @@ import FormSubmit from "@/components/form/FormSubmit";
 import { useAction } from "@/hooks/useActions";
 import { createList } from "@/actions/create-list/action";
 import { notify } from "@/lib/notify";
+import { submitForm } from "@/lib/submitForm";
 
 const ListForm = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -18,7 +19,7 @@ const ListForm = () => {
   const params = useParams();
   const router = useRouter();
 
-  const { execute, fieldErrors } = useAction(createList, {
+  const { execute, fieldErrors, isLoading } = useAction(createList, {
     onError(error) {
       notify.error(error);
     },
@@ -60,11 +61,12 @@ const ListForm = () => {
   );
   return isEditing ? (
     <form
-      action={onSubmit}
+      onSubmit={submitForm(onSubmit)}
       ref={formRef}
       className="flex flex-col gap-2 rounded-[14px] border border-border/70 bg-surface-2 p-2.5"
     >
       <FormInput
+        disabled={isLoading}
         errors={fieldErrors}
         ref={inputRef}
         id="title"
@@ -74,7 +76,9 @@ const ListForm = () => {
       />
       <input type="hidden" value={params?.boardId} name="boardId" />
       <div className="flex items-center gap-1.5">
-        <FormSubmit className="h-8 px-3.5">Add list</FormSubmit>
+        <FormSubmit disabled={isLoading} className="h-8 px-3.5">
+          Add list
+        </FormSubmit>
         <Button
           type="button"
           onClick={disableEditing}

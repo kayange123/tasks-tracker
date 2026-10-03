@@ -14,6 +14,7 @@ import React, {
   useRef,
 } from "react";
 import { notify } from "@/lib/notify";
+import { submitForm } from "@/lib/submitForm";
 import { useEventListener, useOnClickOutside } from "usehooks-ts";
 
 interface CardFormProps {
@@ -28,7 +29,7 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
     const params = useParams();
     const formRef = useRef<ElementRef<"form">>(null);
 
-    const { execute, fieldErrors } = useAction(createCard, {
+    const { execute, fieldErrors, isLoading } = useAction(createCard, {
       onSuccess(data) {
         notify.success("Card created", {
           description: `“${data?.title}” was added to the list.`,
@@ -70,8 +71,13 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
       execute({ title, boardId, listId });
     };
     return isEditing ? (
-      <form ref={formRef} action={onSubmit} className="flex flex-col gap-2">
+      <form
+        ref={formRef}
+        onSubmit={submitForm(onSubmit)}
+        className="flex flex-col gap-2"
+      >
         <FormTextArea
+          disabled={isLoading}
           id="title"
           label="Card title"
           labelHidden
@@ -82,7 +88,9 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
           className="min-h-16 bg-card"
         />
         <div className="flex items-center gap-1.5">
-          <FormSubmit className="h-8 px-3.5">Add card</FormSubmit>
+          <FormSubmit disabled={isLoading} className="h-8 px-3.5">
+            Add card
+          </FormSubmit>
           <Button
             type="button"
             onClick={disableEditing}
