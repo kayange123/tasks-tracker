@@ -36,10 +36,8 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
   });
 
   return (
-    <div className="p-4 h-full overflow-x-auto">
-      {/* Keyed by board so another board's lists never carry over */}
-      <ListContainer key={boardId} boardId={boardId} list={list} />
-    </div>
+    // Keyed by board so another board's lists never carry over
+    <ListContainer key={boardId} boardId={boardId} list={list} />
   );
 };
 

@@ -19,13 +19,14 @@ import { useEventListener, useOnClickOutside } from "usehooks-ts";
 
 interface CardFormProps {
   listId: string;
+  onCreated?: (cardId: string) => void;
   enableEditing: () => void;
   disableEditing: () => void;
   isEditing: boolean;
 }
 
 const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
-  ({ listId, enableEditing, disableEditing, isEditing }, ref) => {
+  ({ listId, onCreated, enableEditing, disableEditing, isEditing }, ref) => {
     const params = useParams();
     const formRef = useRef<ElementRef<"form">>(null);
 
@@ -35,6 +36,7 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
           description: `“${data?.title}” was added to the list.`,
         });
         formRef.current?.reset();
+        onCreated?.(data.id);
         disableEditing();
       },
       onError(error) {
