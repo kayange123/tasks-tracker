@@ -10,18 +10,25 @@ import ListOptions from "./ListOptions";
 
 interface ListHeaderProps {
   title: string;
+  count: number;
   id: string;
   boardId: string;
   onAddCard: () => void;
 }
 
-const ListHeader = ({ id, title, boardId, onAddCard }: ListHeaderProps) => {
+const ListHeader = ({
+  id,
+  title,
+  count,
+  boardId,
+  onAddCard,
+}: ListHeaderProps) => {
   const [listTitle, setListTitle] = useState(title);
   const [isEditing, setIsEditing] = useState(false);
   const formRef = useRef<ElementRef<"form">>(null);
   const inputRef = useRef<ElementRef<"input">>(null);
 
-  const enableEditng = () => {
+  const enableEditing = () => {
     setIsEditing(true);
     setTimeout(() => {
       inputRef.current?.focus();
@@ -42,7 +49,8 @@ const ListHeader = ({ id, title, boardId, onAddCard }: ListHeaderProps) => {
   });
   const onkeyDown = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
-      formRef.current?.submit();
+      // Cancel the rename; the native submit() would bypass the action
+      disableEditing();
     }
   };
 
@@ -61,28 +69,42 @@ const ListHeader = ({ id, title, boardId, onAddCard }: ListHeaderProps) => {
 
   useEventListener("keydown", onkeyDown);
   return (
-    <div className="flex px-3 gap-x-2 pt-2 justify-between items-start text-sm font-semibold">
+    <div className="flex items-center gap-1.5 pl-0.5">
       {isEditing ? (
-        <form ref={formRef} action={onSubmit} className="flex-1 px-[2px]">
+        <form ref={formRef} action={onSubmit} className="min-w-0 flex-1">
           <FormInput
             errors={fieldErrors}
-            className="text-sm px-[7px] h-7 py-1 font-medium border-transparent hover:border-input focus:border-input transition truncate"
             ref={inputRef}
             id="title"
+            label="List title"
+            labelHidden
             onBlur={onBlur}
-            placeholder="Enter a title..."
+            placeholder="Enter a title…"
             defaultValue={listTitle}
+            className="h-8 px-2 text-sm font-semibold"
           />
         </form>
       ) : (
-        <p
-          onClick={enableEditng}
-          className="w-full text-sm px-2.5 py-1 h-7 font-medium border-transparent"
-        >
-          {listTitle}
-        </p>
+        <>
+          <h2 className="min-w-0">
+            <button
+              type="button"
+              onClick={enableEditing}
+              title="Rename list"
+              className="max-w-full truncate rounded-md px-1.5 py-1 text-left text-sm font-semibold transition-colors hover:bg-accent"
+            >
+              {listTitle}
+            </button>
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {count}
+            <span className="sr-only"> {count === 1 ? "card" : "cards"}</span>
+          </span>
+        </>
       )}
-      <ListOptions onAddCard={onAddCard} id={id} boardId={boardId} />
+      <div className="ml-auto">
+        <ListOptions onAddCard={onAddCard} id={id} boardId={boardId} />
+      </div>
     </div>
   );
 };

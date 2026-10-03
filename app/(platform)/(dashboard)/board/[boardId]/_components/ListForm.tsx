@@ -10,6 +10,7 @@ import FormSubmit from "@/components/form/FormSubmit";
 import { useAction } from "@/hooks/useActions";
 import { createList } from "@/actions/create-list/action";
 import { notify } from "@/lib/notify";
+import { submitForm } from "@/lib/submitForm";
 
 const ListForm = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -18,7 +19,7 @@ const ListForm = () => {
   const params = useParams();
   const router = useRouter();
 
-  const { execute, fieldErrors } = useAction(createList, {
+  const { execute, fieldErrors, isLoading } = useAction(createList, {
     onError(error) {
       notify.error(error);
     },
@@ -58,44 +59,47 @@ const ListForm = () => {
     formRef as React.RefObject<HTMLFormElement>,
     disableEditing
   );
-  return (
-    <div className="w-full md:max-w-xs">
-      {isEditing ? (
-        <form
-          action={onSubmit}
-          ref={formRef}
-          className=" p-3 bg-white space-y-4 shadow-xs"
-        >
-          <FormInput
-            errors={fieldErrors}
-            ref={inputRef}
-            id="title"
-            placeholder="Enter list title"
-            className="text-sm px-2 py-1 h-7 font-medium border-transparent hover:border-input transition ease-in focus:border-input"
-          />
-          <input type="text" hidden value={params?.boardId} name="boardId" />
-          <div className="flex items-center justify-between gap-x-1">
-            <FormSubmit className="h-8">Add list</FormSubmit>
-            <Button
-              type="submit"
-              onClick={disableEditing}
-              size="sm"
-              variant="ghost"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </form>
-      ) : (
+  return isEditing ? (
+    <form
+      onSubmit={submitForm(onSubmit)}
+      ref={formRef}
+      className="flex flex-col gap-2 rounded-[14px] border border-border/70 bg-surface-2 p-2.5"
+    >
+      <FormInput
+        disabled={isLoading}
+        errors={fieldErrors}
+        ref={inputRef}
+        id="title"
+        label="New list"
+        placeholder="e.g. In review"
+        className="bg-card"
+      />
+      <input type="hidden" value={params?.boardId} name="boardId" />
+      <div className="flex items-center gap-1.5">
+        <FormSubmit disabled={isLoading} className="h-8 px-3.5">
+          Add list
+        </FormSubmit>
         <Button
-          onClick={enableEditing}
-          className="w-full rounded-md bg-white/80 hover:bg-white/50 text-black/80 font-extrabold transition p-3 flex items-center"
+          type="button"
+          onClick={disableEditing}
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Cancel"
+          className="text-muted-foreground"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Add a list
+          <X />
         </Button>
-      )}
-    </div>
+      </div>
+    </form>
+  ) : (
+    <button
+      type="button"
+      onClick={enableEditing}
+      className="flex h-12 w-full items-center justify-center gap-2 rounded-[14px] border border-dashed border-input text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:bg-primary-soft hover:text-primary-text"
+    >
+      <Plus aria-hidden className="size-4" />
+      Add a list
+    </button>
   );
 };
 

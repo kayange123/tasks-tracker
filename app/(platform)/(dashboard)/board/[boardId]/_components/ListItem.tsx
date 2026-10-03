@@ -29,35 +29,40 @@ const ListItem = ({ index, list }: ListItemProps) => {
   };
   return (
     <Draggable draggableId={list.id} index={index}>
-      {(provided) => (
+      {(provided, snapshot) => (
         <li
           {...provided.draggableProps}
           ref={provided.innerRef}
-          className="shrink-0 h-full max-w-xs select-none"
+          className="flex max-h-full w-72 shrink-0 flex-col select-none"
         >
-          <div
+          <section
             {...provided.dragHandleProps}
-            className="w-full rounded-md bg-[#f1f2f4] shadow-md pb-2"
+            aria-label={list.title}
+            className={cn(
+              "flex max-h-full flex-col gap-2 rounded-[14px] border border-border/70 bg-surface-2 p-2.5 transition-shadow",
+              snapshot.isDragging && "shadow-lg ring-1 ring-primary/40"
+            )}
           >
             <ListHeader
               // Remount when the saved title changes so local state can't go stale
               key={`${list.id}:${list.title}`}
               onAddCard={enableEditing}
               title={list.title}
+              count={list.cards.length}
               id={list.id}
               boardId={list.boardId}
             />
             <Droppable droppableId={list.id} type="card">
-              {(provided) => (
+              {(provided, snapshot) => (
                 <ol
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                   className={cn(
-                    "mx-1 px-1 py-0.5 flex mt-0 flex-col gap-y-2",
-                    list.cards.length > 0 && "mt-2"
+                    "flex min-h-1 flex-col gap-2 overflow-y-auto rounded-[10px] transition-colors",
+                    snapshot.isDraggingOver && "bg-primary-soft"
                   )}
                 >
-                  {list.cards?.map((card, index) => (
+                  {list.cards.map((card, index) => (
                     <CardItem index={index} key={card.id} data={card} />
                   ))}
                   {provided.placeholder}
@@ -71,7 +76,7 @@ const ListItem = ({ index, list }: ListItemProps) => {
               disableEditing={disableEditing}
               listId={list.id}
             />
-          </div>
+          </section>
         </li>
       )}
     </Draggable>

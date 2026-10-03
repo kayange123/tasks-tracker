@@ -13,6 +13,7 @@ import FormSubmit from "./FormSubmit";
 import { useAction } from "@/hooks/useActions";
 import { createBoard } from "@/actions/create-board/action";
 import { notify } from "@/lib/notify";
+import { submitForm } from "@/lib/submitForm";
 import FormPicker from "./form-picker";
 import { useRef, useState, ElementRef } from "react";
 import { useRouter } from "next/navigation";
@@ -39,7 +40,7 @@ const CreateBoardForm = ({ onCreated }: { onCreated: () => void }) => {
   const [title, setTitle] = useState("");
   const [hasImage, setHasImage] = useState(false);
 
-  const { execute, fieldErrors } = useAction(createBoard, {
+  const { execute, fieldErrors, isLoading } = useAction(createBoard, {
     onSuccess: (data) => {
       notify.success("Board created", {
         description: `“${data?.title}” is ready.`,
@@ -77,9 +78,10 @@ const CreateBoardForm = ({ onCreated }: { onCreated: () => void }) => {
   };
 
   return (
-    <form action={onSubmit} className="flex flex-col gap-3.5">
+    <form onSubmit={submitForm(onSubmit)} className="flex flex-col gap-3.5">
       <FormPicker id="image" errors={fieldErrors} onChange={setHasImage} />
       <FormInput
+        disabled={isLoading}
         errors={fieldErrors}
         id="title"
         type="text"
@@ -89,7 +91,7 @@ const CreateBoardForm = ({ onCreated }: { onCreated: () => void }) => {
         invalid={!!titleError}
         hint={titleError ?? usageHint}
       />
-      <FormSubmit disabled={!canSubmit} className="w-full">
+      <FormSubmit disabled={!canSubmit || isLoading} className="w-full">
         Create board
       </FormSubmit>
     </form>
