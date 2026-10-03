@@ -128,7 +128,7 @@ const ListContainer = ({ boardId, list }: ListContainerProps) => {
             ref={provided.innerRef}
             {...provided.droppableProps}
             aria-label="Lists"
-            className="flex h-full items-start gap-4 overflow-x-auto px-4 py-6 md:px-7"
+            className="flex h-full items-start gap-4 overflow-x-auto overflow-y-hidden px-4 py-6 md:px-7"
           >
             {/* Render the optimistic order, not the last server snapshot */}
             {orderedList.map((list, index) => (
