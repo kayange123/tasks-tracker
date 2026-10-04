@@ -23,6 +23,7 @@ interface FormInputProps {
   defaultValue?: string;
   onBlur?: () => void;
   onChange?: (value: string) => void;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
 }
 const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   (
@@ -41,6 +42,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       defaultValue = "",
       onBlur,
       onChange,
+      onKeyDown,
     },
     ref
   ) => {
@@ -64,6 +66,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
           defaultValue={defaultValue}
           required={required}
           onBlur={onBlur}
+          onKeyDown={onKeyDown}
           onChange={onChange && ((event) => onChange(event.target.value))}
           placeholder={placeholder}
           name={id}
