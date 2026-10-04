@@ -42,7 +42,13 @@ const CardModal = () => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-h-[calc(100dvh-2rem)] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-3xl sm:p-7"
+        className="max-h-[calc(100dvh-2rem)] gap-6 overflow-y-auto rounded-2xl bg-card p-6 sm:max-w-3xl sm:p-7"
+        // Focus the dialog itself on open (still announced), so the close
+        // button doesn't start out focused and Tab goes to the title first
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          (event.currentTarget as HTMLElement | null)?.focus();
+        }}
         // Escape in a field cancels that edit instead of closing the card
         onEscapeKeyDown={(event) => {
           const target = event.target as HTMLElement | null;

@@ -82,7 +82,7 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
             onBlur={onBlur}
             onKeyDown={onKeyDown}
             errors={fieldErrors}
-            className="-ml-1.5 h-auto border-transparent bg-transparent px-1.5 py-0.5 text-xl font-semibold tracking-tight shadow-none hover:border-input focus-visible:border-ring dark:bg-transparent"
+            className="-ml-1.5 h-auto border-transparent bg-transparent px-1.5 py-0.5 text-xl font-semibold md:text-xl tracking-tight shadow-none hover:border-input focus-visible:border-ring dark:bg-transparent"
           />
         </form>
         <p className="text-[13px] text-muted-foreground">
