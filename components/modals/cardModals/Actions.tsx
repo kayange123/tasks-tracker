@@ -72,38 +72,40 @@ const Actions = ({ data }: ActionsProps) => {
     executeDeleteCard({ id: data?.id, boardId });
   };
   return (
-    <div className="space-y-2 mt-2">
-      <p className="text-xs font-semibold">Actions</p>
+    <aside className="flex flex-col gap-2">
+      <h3 className="pb-0.5 text-xs font-medium text-muted-foreground">
+        Actions
+      </h3>
       <Button
+        variant="outline"
+        size="sm"
         onClick={onCopy}
-        size="inline"
         disabled={isLoadCopy}
-        variant="gray"
-        className="w-full justify-start"
+        className="justify-start"
       >
-        <Copy className="h-4 w-4 mr-2" />
-        {isLoadCopy ? "Copying..." : "Copy"}
+        <Copy />
+        {isLoadCopy ? "Copying…" : "Copy card"}
       </Button>
       <Button
+        variant="outline"
+        size="sm"
         onClick={onDelete}
         disabled={isLoadDelete}
-        size="inline"
-        variant="gray"
-        className="w-full justify-start"
+        className="justify-start border-destructive-soft text-destructive-text hover:bg-destructive-soft hover:text-destructive-text dark:border-destructive-soft dark:hover:bg-destructive-soft"
       >
-        <Trash2 className="h-4 w-4 mr-2" />
-        {isLoadDelete ? "Deleting..." : "Delete"}
+        <Trash2 />
+        {isLoadDelete ? "Deleting…" : "Delete card"}
       </Button>
-    </div>
+    </aside>
   );
 };
 
 Actions.Skeleton = function ActionsSkeleton() {
   return (
-    <div className="space-y-2 mt-2">
-      <Skeleton className="w-20 h-4 bg-neutral-200" />
-      <Skeleton className="w-full h-8 bg-neutral-200" />
-      <Skeleton className="w-full h-8 bg-neutral-200" />
+    <div className="flex flex-col gap-2" aria-busy="true">
+      <Skeleton className="h-3.5 w-16" />
+      <Skeleton className="h-8 w-full" />
+      <Skeleton className="h-8 w-full" />
     </div>
   );
 };

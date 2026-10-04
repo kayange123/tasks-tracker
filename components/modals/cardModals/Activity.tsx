@@ -1,36 +1,42 @@
-interface ActivityProps {
-  logs: AuditLog[];
-}
-
 import ActivityItem from "@/components/ActivityItem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuditLog } from "@prisma/client";
 import { ActivityIcon } from "lucide-react";
 
+interface ActivityProps {
+  logs: AuditLog[];
+}
+
 const Activity = ({ logs }: ActivityProps) => {
   return (
-    <div className="flex items-start gap-x-3 w-full">
-      <ActivityIcon className="h-5 w-5 mt-0.5 text-neutral-700" />
-      <div className="w-full">
-        <p className="font-semibold mb-2 text-neutral-700">Activity</p>
-        <ol className="mt-2 space-y-4">
+    <section className="flex flex-col gap-3">
+      <h3 className="flex items-center gap-2 text-sm font-semibold">
+        <ActivityIcon aria-hidden className="size-4 text-muted-foreground" />
+        Activity
+      </h3>
+      {logs.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No activity yet.</p>
+      ) : (
+        <ol className="flex flex-col gap-3.5">
           {logs.map((log) => (
             <ActivityItem key={log.id} log={log} />
           ))}
         </ol>
-      </div>
-    </div>
+      )}
+    </section>
   );
 };
 
 Activity.Skeleton = function ActivitySkeleton() {
   return (
-    <div className="flex items-start gap-x-3 w-full">
-      <Skeleton className="w-6 h-6 bg-neutral-200" />
-      <div className="w-full">
-        <Skeleton className="w-24 h-6 mb-2 bg-neutral-200" />
-        <Skeleton className="w-full h-10 bg-neutral-200" />
-      </div>
+    <div className="flex flex-col gap-3" aria-busy="true">
+      <Skeleton className="h-5 w-24" />
+      {Array.from({ length: 3 }, (_, index) => (
+        <div key={index} className="flex items-center gap-3">
+          <Skeleton className="size-7 rounded-full" />
+          <Skeleton className="h-4 flex-1" />
+        </div>
+      ))}
     </div>
   );
 };
