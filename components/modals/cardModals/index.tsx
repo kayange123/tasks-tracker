@@ -1,6 +1,11 @@
 "use client";
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useCardModal } from "@/hooks/useCardModal";
 import { fetcher } from "@/lib/fetcher";
 import { CardWithList } from "@/types";
@@ -36,22 +41,35 @@ const CardModal = () => {
   const cardLogs = cardData ? logs : undefined;
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-3xl sm:p-7"
+        // Escape in a field cancels that edit instead of closing the card
+        onEscapeKeyDown={(event) => {
+          const target = event.target as HTMLElement | null;
+          if (target?.closest("input, textarea")) {
+            event.preventDefault();
+          }
+        }}
+      >
+        <DialogTitle className="sr-only">
+          {cardData?.title ?? "Loading card"}
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          {cardData ? `Card in list ${cardData.list.title}` : "Card details"}
+        </DialogDescription>
         {!cardData ? (
           <ModalHeader.Skeleton />
         ) : (
           <ModalHeader key={cardData.id} data={cardData} />
         )}
-        <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4">
-          <div className="col-span-3">
-            <div className="w-full space-y-6">
-              {!cardData ? (
-                <Description.Skeleton />
-              ) : (
-                <Description key={cardData.id} data={cardData} />
-              )}
-              {!cardLogs ? <Activity.Skeleton /> : <Activity logs={cardLogs} />}
-            </div>
+        <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_176px]">
+          <div className="flex min-w-0 flex-col gap-6">
+            {!cardData ? (
+              <Description.Skeleton />
+            ) : (
+              <Description key={cardData.id} data={cardData} />
+            )}
+            {!cardLogs ? <Activity.Skeleton /> : <Activity logs={cardLogs} />}
           </div>
           {!cardData ? (
             <Actions.Skeleton />
