@@ -17,12 +17,16 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Unauthorized",
     };
   }
-  const { boardId, id, ...values } = data;
+  const { boardId, id, description, ...values } = data;
   let card;
   try {
     card = await db.card.update({
       data: {
         ...values,
+        // A blank description clears it rather than storing whitespace
+        ...(description !== undefined && {
+          description: description.trim() ? description : null,
+        }),
       },
       where: {
         id,

@@ -19,6 +19,7 @@ interface FormTextAreaProps {
   onBlur?: () => void;
   onClick?: () => void;
   onKeyDown?: KeyboardEventHandler<HTMLTextAreaElement> | undefined;
+  onChange?: (value: string) => void;
   defaultValue?: string;
 }
 const FormTextArea = forwardRef<HTMLTextAreaElement, FormTextAreaProps>(
@@ -35,6 +36,7 @@ const FormTextArea = forwardRef<HTMLTextAreaElement, FormTextAreaProps>(
       onClick,
       onKeyDown,
       onBlur,
+      onChange,
       defaultValue,
     },
     ref
@@ -59,6 +61,7 @@ const FormTextArea = forwardRef<HTMLTextAreaElement, FormTextAreaProps>(
           placeholder={placeholder}
           onBlur={onBlur}
           onKeyDown={onKeyDown}
+          onChange={onChange && ((event) => onChange(event.target.value))}
           required={required}
           name={id}
           id={id}
