@@ -11,16 +11,11 @@ export const UpdateCard = z.object({
     })
     .max(100, { message: "Title must be at most 100 characters." }),
   boardId: z.string(),
+  // Optional; an empty description clears it
   description: z.optional(
     z
-      .string({
-        required_error: "Description is required",
-        invalid_type_error: "Description is invalid",
-      })
-      .min(5, {
-        message: "Description should be at least 5 characters",
-      })
-      .max(5000, { message: "Description should be at most 5000 characters" }),
+      .string({ invalid_type_error: "Enter a description." })
+      .max(5000, { message: "Description must be at most 5,000 characters." })
   ),
   id: z.string(),
 });
