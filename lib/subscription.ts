@@ -3,28 +3,32 @@ import { db } from "./prisma";
 
 const DAY_IN_MS = 86_400_000;
 
-export const checkSubscription = async () => {
+// The active organization's plan. A subscription counts as active until a
+// day after its current period ends, to absorb webhook delays.
+export const getSubscription = async () => {
   const { orgId } = await auth();
 
   if (!orgId) {
-    return false;
+    return { isPro: false, periodEnd: null };
   }
 
   const subscription = await db.orgSubscription.findUnique({
     where: { orgId },
     select: {
-      stripeSubscriptionId: true,
       stripeCurrentPeriodEnd: true,
-      stripeCustomerId: true,
       stripePriceId: true,
     },
   });
 
-  if (!subscription) return false;
+  const periodEnd = subscription?.stripeCurrentPeriodEnd ?? null;
+  const isPro =
+    !!subscription?.stripePriceId &&
+    !!periodEnd &&
+    periodEnd.getTime() + DAY_IN_MS > Date.now();
 
-  const isValid =
-    subscription.stripePriceId &&
-    subscription.stripeCurrentPeriodEnd?.getTime()! + DAY_IN_MS > Date.now();
+  return { isPro, periodEnd: isPro ? periodEnd : null };
+};
 
-  return !!isValid;
+export const checkSubscription = async () => {
+  return (await getSubscription()).isPro;
 };
