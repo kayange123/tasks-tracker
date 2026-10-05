@@ -22,8 +22,9 @@ const SettingsPage = async () => {
           appearance={{
             elements: {
               rootBox: "w-full",
+              // Clerk's own styles win without !important
               cardBox:
-                "w-full max-w-none rounded-xl border border-border shadow-none",
+                "w-full! max-w-none! rounded-xl! border! border-border! shadow-none!",
             },
           }}
         />
