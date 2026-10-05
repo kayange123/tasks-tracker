@@ -1,47 +1,96 @@
 import ActivityItem from "@/components/ActivityItem";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { AuditLog } from "@prisma/client";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
-const ActivityList = async () => {
+export const ACTIVITY_PAGE_SIZE = 30;
+
+interface ActivityListProps {
+  page: number;
+}
+
+const ActivityList = async ({ page }: ActivityListProps) => {
   const { orgId } = await auth();
+  if (!orgId) redirect("/select-org");
 
-  if (!orgId) {
-    redirect("/select-org");
-  }
-  let auditLogs: AuditLog[] = [];
-  try {
-    auditLogs = await db.auditLog.findMany({
-      where: { orgId },
-      orderBy: { createdAt: "desc" },
-    });
-  } catch (error) {
-    console.log(error);
+  // One extra row tells us whether an older page exists
+  const logs = await db.auditLog.findMany({
+    where: { orgId },
+    orderBy: { createdAt: "desc" },
+    skip: (page - 1) * ACTIVITY_PAGE_SIZE,
+    take: ACTIVITY_PAGE_SIZE + 1,
+  });
+  const hasOlder = logs.length > ACTIVITY_PAGE_SIZE;
+  const items = logs.slice(0, ACTIVITY_PAGE_SIZE);
+  const href = (target: number) =>
+    target === 1
+      ? `/organization/${orgId}/activity`
+      : `/organization/${orgId}/activity?page=${target}`;
+
+  if (items.length === 0) {
+    return (
+      <p className="rounded-xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
+        {page === 1
+          ? "No activity yet. Changes to boards, lists and cards will show up here."
+          : "There's no activity on this page."}
+      </p>
+    );
   }
 
-  //   console.log(auditLogs);
   return (
-    <ol className="mt-4 space-y-4">
-      <li className="hidden last:block text-xs text-center text-muted-foreground">
-        No activity found inside this organization
-      </li>
-      {auditLogs &&
-        auditLogs.map((log) => <ActivityItem log={log} key={log.id} />)}
-    </ol>
+    <div className="flex flex-col gap-4">
+      <ol className="divide-y rounded-xl border bg-card [&>li]:px-4 [&>li]:py-3">
+        {items.map((log) => (
+          <ActivityItem key={log.id} log={log} />
+        ))}
+      </ol>
+      {(page > 1 || hasOlder) && (
+        <nav
+          aria-label="Activity pages"
+          className="flex items-center justify-between gap-3"
+        >
+          {page > 1 ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={href(page - 1)}>
+                <ChevronLeft />
+                Newer
+              </Link>
+            </Button>
+          ) : (
+            <span />
+          )}
+          <span className="text-[13px] text-muted-foreground">Page {page}</span>
+          {hasOlder ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={href(page + 1)}>
+                Older
+                <ChevronRight />
+              </Link>
+            </Button>
+          ) : (
+            <span />
+          )}
+        </nav>
+      )}
+    </div>
   );
 };
 
 ActivityList.Skeleton = function ActivityListSkeleton() {
   return (
-    <ol className="mt-4 space-y-4 w-full">
-      <Skeleton className="w-[80%] h-14" />
-      <Skeleton className="w-[50%] h-14" />
-      <Skeleton className="w-[70%] h-14" />
-      <Skeleton className="w-[80%] h-14" />
-      <Skeleton className="w-[75%] h-14" />
-    </ol>
+    <div className="divide-y rounded-xl border bg-card" aria-busy="true">
+      {Array.from({ length: 8 }, (_, index) => (
+        <div key={index} className="flex items-center gap-3 px-4 py-3">
+          <Skeleton className="size-7 rounded-full" />
+          <Skeleton className="h-4 flex-1" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+      ))}
+    </div>
   );
 };
 
