@@ -16,7 +16,7 @@ const subscription = {
 
 const webhook = () =>
   POST(
-    new Request("http://localhost/api/webhook", { method: "POST", body: "{}" }),
+    new Request("http://localhost/api/webhook", { method: "POST", body: "{}" })
   );
 
 describe("Stripe webhook", () => {
@@ -146,5 +146,27 @@ describe("stripe-redirect handler", () => {
     const params = stripeMock.checkout.sessions.create.mock.calls[0][0];
     expect(params.customer_email).toBe("jane@example.com");
     expect(params).not.toHaveProperty("customer");
+  });
+});
+
+describe("stripe-redirect failures", () => {
+  it("logs the Stripe error and returns a clear message", async () => {
+    vi.mocked(checkSubscription).mockResolvedValue(false);
+    currentUserMock.mockResolvedValue({ emailAddresses: [] });
+    dbMock.orgSubscription.findUnique.mockResolvedValue(null);
+    stripeMock.checkout.sessions.create.mockRejectedValue(
+      new Error("Invalid API Key")
+    );
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    const result = await stripeRedirect();
+
+    expect(result.error).toBe("Couldn’t open Stripe. Try again in a moment.");
+    expect(consoleError).toHaveBeenCalledWith(
+      "Stripe redirect failed",
+      expect.any(Error)
+    );
   });
 });
