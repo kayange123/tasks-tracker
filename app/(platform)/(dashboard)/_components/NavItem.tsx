@@ -5,12 +5,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Activity, CreditCard, Layout, Settings } from "lucide-react";
+import { Activity, CreditCard, LayoutGrid, Settings } from "lucide-react";
 import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export type TOrganization = {
   id: string;
@@ -20,83 +20,75 @@ export type TOrganization = {
 };
 
 interface NavItemProps {
-  isExpanded: boolean;
   isActive: boolean;
   organization: TOrganization;
-  onExpand: (id: string) => void;
 }
-const NavItem = ({
-  isActive,
-  isExpanded,
-  onExpand,
-  organization,
-}: NavItemProps) => {
-  const router = useRouter();
+
+const NavItem = ({ isActive, organization }: NavItemProps) => {
   const pathname = usePathname();
 
   const routes = [
     {
       label: "Boards",
-      icon: <Layout className="w-4 h-4" />,
+      icon: LayoutGrid,
       href: `/organization/${organization.id}`,
     },
     {
       label: "Activity",
-      icon: <Activity className="w-4 h-4" />,
+      icon: Activity,
       href: `/organization/${organization.id}/activity`,
     },
     {
       label: "Settings",
-      icon: <Settings className="w-4 h-4" />,
+      icon: Settings,
       href: `/organization/${organization.id}/settings`,
     },
     {
       label: "Billing",
-      icon: <CreditCard className="w-4 h-4" />,
+      icon: CreditCard,
       href: `/organization/${organization.id}/billing`,
     },
   ];
-  const onClick = (link: string) => {
-    router.push(link);
-  };
 
   return (
     <AccordionItem value={organization.id} className="border-none">
       <AccordionTrigger
-        onClick={() => onExpand(organization.id)}
         className={cn(
-          "flex items-center gap-x-2 p-1.5 rounded-md text-start no-underline hover:no-underline text-neutral-700 hover:bg-neutral-500/10",
-          isActive && !isExpanded && "bg-sky-500/10 text-sky-700"
+          "items-center rounded-lg px-2 py-2 hover:bg-accent hover:no-underline",
+          isActive ? "font-semibold" : "font-medium"
         )}
       >
-        <div className="flex items-center gap-x-2">
-          <div className="w-7 h-7 relative">
-            <Image
-              src={organization.imageUrl}
-              alt="organization image"
-              fill
-              className="rounded-sm object-cover"
-            />
-          </div>
-          <span className="text-sm font-medium">{organization?.name}</span>
-        </div>
+        <span className="flex min-w-0 items-center gap-2.5">
+          <Image
+            src={organization.imageUrl}
+            alt=""
+            width={24}
+            height={24}
+            className="size-6 shrink-0 rounded-md object-cover"
+          />
+          <span className="truncate">{organization.name}</span>
+        </span>
       </AccordionTrigger>
-      <AccordionContent className="pt-1 text-neutral-700">
-        {routes.map(({ href, label, icon }) => (
-          <Button
-            key={label}
-            size="sm"
-            onClick={() => onClick(href)}
-            className={cn(
-              "w-full font-normal justify-start pl-10 mb-1",
-              pathname === href && "bg-sky-500/10 text-sky-700"
-            )}
-            variant="ghost"
-          >
-            <p className="w-4 h-4">{icon}</p>
-            <span className="ml-2">{label}</span>
-          </Button>
-        ))}
+      <AccordionContent className="flex flex-col gap-0.5 pt-1 pb-1 pl-3">
+        {routes.map(({ href, label, icon: Icon }) => {
+          const isCurrent = pathname === href;
+          return (
+            <Link
+              key={label}
+              href={href}
+              aria-current={isCurrent ? "page" : undefined}
+              className={cn(
+                "flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm transition-colors",
+                isCurrent
+                  ? "bg-primary-soft font-medium text-primary-text"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              )}
+            >
+              <Icon aria-hidden className="size-4" />
+              {label}
+            </Link>
+          );
+        })}
       </AccordionContent>
     </AccordionItem>
   );
@@ -106,11 +98,9 @@ export default NavItem;
 
 NavItem.Skeleton = function NavItemSkeleton() {
   return (
-    <div className="flex items-center gap-x-2">
-      <div className="relative shrink-0 w-10 h-10">
-        <Skeleton className="w-full h-full absolute" />
-      </div>
-      <Skeleton className="h-10 w-full" />
+    <div className="flex items-center gap-2.5 px-2 py-2">
+      <Skeleton className="size-6 shrink-0 rounded-md" />
+      <Skeleton className="h-4 w-full" />
     </div>
   );
 };

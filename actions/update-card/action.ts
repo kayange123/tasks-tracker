@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { revalidatePath } from "next/cache";
 import { createActions } from "@/lib/createActions";
 import { UpdateCard } from "./schema";
@@ -16,15 +17,20 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Unauthorized",
     };
   }
-  const { boardId, id, ...values } = data;
+  const { boardId, id, description, ...values } = data;
   let card;
   try {
     card = await db.card.update({
       data: {
         ...values,
+        // A blank description clears it rather than storing whitespace
+        ...(description !== undefined && {
+          description: description.trim() ? description : null,
+        }),
       },
       where: {
         id,
+        ...active,
         list: {
           board: {
             orgId,

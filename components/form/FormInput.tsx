@@ -5,79 +5,100 @@ import { useFormStatus } from "react-dom";
 import { Label } from "@/components/ui/label";
 import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
-import { XCircle } from "lucide-react";
 
 interface FormInputProps {
   id: string;
   label?: string;
+  // Keep the label for screen readers only, e.g. inline title editors
+  labelHidden?: boolean;
   type?: string;
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
   errors?: Record<string, string[] | undefined>;
+  // Client-side message shown when there are no server errors
+  hint?: string;
+  invalid?: boolean;
   className?: string;
   defaultValue?: string;
   onBlur?: () => void;
+  onChange?: (value: string) => void;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
 }
 const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   (
     {
       id,
       label,
+      labelHidden,
       placeholder,
       type,
       required,
       disabled,
       errors,
+      hint,
+      invalid,
       className,
       defaultValue = "",
       onBlur,
+      onChange,
+      onKeyDown,
     },
     ref
   ) => {
     const { pending } = useFormStatus();
+    const fieldErrors = errors?.[id];
+    const isInvalid = invalid || !!fieldErrors?.length;
+    const describedBy =
+      fieldErrors?.length || hint ? `${id}-message` : undefined;
 
     return (
-      <div className="space-y-2">
-        <div className="space-y-1">
-          {label && (
-            <Label
-              htmlFor={id}
-              className="text-xs font-semibold text-neutral-700"
-            >
-              {label}
-            </Label>
-          )}
-          <Input
-            defaultValue={defaultValue}
-            required={required}
-            onBlur={onBlur}
-            placeholder={placeholder}
-            name={id}
-            ref={ref}
-            id={id}
-            type={type}
-            disabled={disabled || pending}
-            className={cn("text-sm h-7 px-2 py-1", className)}
-            aria-describedby={`${id}-error`}
-          />
-        </div>
-        {errors && (
-          <div
-            className="mt-2 text-xs text-red-500"
-            id={`${id}-error`}
-            aria-live="polite"
+      <div className="flex flex-col gap-1.5">
+        {label && (
+          <Label
+            htmlFor={id}
+            className={cn("text-[13px] font-medium", labelHidden && "sr-only")}
           >
-            {errors?.[id]?.map((error: string) => (
-              <p
-                key={error}
-                className="flex items-center font-medium p-2 border border-red-500 bg-rose-500/10 rounded-sm"
-              >
-                <XCircle className="h-4 w-4 mr-2" />
+            {label}
+          </Label>
+        )}
+        <Input
+          defaultValue={defaultValue}
+          required={required}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
+          onChange={onChange && ((event) => onChange(event.target.value))}
+          placeholder={placeholder}
+          name={id}
+          ref={ref}
+          id={id}
+          type={type}
+          disabled={disabled || pending}
+          aria-invalid={isInvalid || undefined}
+          aria-describedby={describedBy}
+          className={cn("h-9 px-3 text-sm", className)}
+        />
+        {fieldErrors?.length ? (
+          <div id={`${id}-message`} aria-live="polite">
+            {fieldErrors.map((error) => (
+              <p key={error} className="text-xs text-destructive-text">
                 {error}
               </p>
             ))}
           </div>
+        ) : (
+          hint && (
+            <p
+              id={`${id}-message`}
+              aria-live="polite"
+              className={cn(
+                "text-xs",
+                invalid ? "text-destructive-text" : "text-muted-foreground"
+              )}
+            >
+              {hint}
+            </p>
+          )
         )}
       </div>
     );

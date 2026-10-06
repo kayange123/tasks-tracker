@@ -11,20 +11,26 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AlignLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { ElementRef, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
+import { submitForm } from "@/lib/submitForm";
+import { cn } from "@/lib/utils";
 import { useEventListener, useOnClickOutside } from "usehooks-ts";
+
+const MAX_LENGTH = 5000;
 
 interface DescriptionProps {
   data: CardWithList;
 }
 const Description = ({ data }: DescriptionProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [length, setLength] = useState(0);
   const queryClient = useQueryClient();
   const params = useParams();
   const textAreaRef = useRef<ElementRef<"textarea">>(null);
   const formRef = useRef<ElementRef<"form">>(null);
 
   const enableEditing = () => {
+    setLength(data.description?.length ?? 0);
     setIsEditing(true);
     setTimeout(() => {
       textAreaRef.current?.focus();
@@ -40,19 +46,21 @@ const Description = ({ data }: DescriptionProps) => {
       disableEditing();
     }
   };
-  const { execute, fieldErrors } = useAction(updateCard, {
-    onSuccess(data) {
+  const { execute, fieldErrors, isLoading } = useAction(updateCard, {
+    onSuccess(card) {
       queryClient.invalidateQueries({
-        queryKey: ["card", data?.id],
+        queryKey: ["card", card?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["card-log", data?.id],
+        queryKey: ["card-log", card?.id],
       });
       disableEditing();
-      toast.success(`card updated`);
+      notify.success(
+        card.description ? "Description saved" : "Description removed"
+      );
     },
     onError(error) {
-      toast.error(error);
+      notify.error(error);
     },
   });
 
@@ -60,69 +68,96 @@ const Description = ({ data }: DescriptionProps) => {
   // usehooks-ts types predate React 19 nullable refs
   useOnClickOutside(
     formRef as React.RefObject<HTMLFormElement>,
-    disableEditing,
+    disableEditing
   );
 
   const onSubmit = (form: FormData) => {
     const description = form.get("description") as string;
     const boardId = params.boardId as string;
 
+    if (description === (data.description ?? "")) {
+      return disableEditing();
+    }
+
     execute({
       title: data.title,
       description,
       boardId,
-      id: data?.id,
+      id: data.id,
     });
   };
+
+  const tooLong = length > MAX_LENGTH;
+
   return (
-    <div className="flex items-start gap-x-3 w-full ">
-      <AlignLeft className="h-5 w-5 text-neutral-700 mt-0.5" />
-      <div className="w-full">
-        <p className="font-semibold text-neutral-700 mb-2">Description</p>
-        {isEditing ? (
-          <form className="space-y-2" action={onSubmit} ref={formRef}>
-            <FormTextArea
-              ref={textAreaRef}
-              id="description"
-              className="w-full mt-2"
-              errors={fieldErrors}
-              placeholder="Add a more detailed description"
-              defaultValue={data?.description || undefined}
-            />
-            <div className="flex items-center gap-x-2">
-              <FormSubmit>Save</FormSubmit>
-              <Button
-                onClick={disableEditing}
-                type="button"
-                size="sm"
-                variant="ghost"
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <div
-            onClick={enableEditing}
-            role="button"
-            className="min-h-[78px] bg-neutral-200 text-sm font-medium py-3 rounded-md px-3.5"
-          >
-            {data?.description || "Add a more detailed description"}
+    <section className="flex flex-col gap-2.5">
+      <h3 className="flex items-center gap-2 text-sm font-semibold">
+        <AlignLeft aria-hidden className="size-4 text-muted-foreground" />
+        Description
+      </h3>
+      {isEditing ? (
+        <form
+          ref={formRef}
+          onSubmit={submitForm(onSubmit)}
+          className="flex flex-col gap-2"
+        >
+          <FormTextArea
+            ref={textAreaRef}
+            id="description"
+            label="Description"
+            labelHidden
+            errors={fieldErrors}
+            placeholder="Add more detail to this card…"
+            defaultValue={data.description ?? undefined}
+            onChange={(value) => setLength(value.length)}
+            disabled={isLoading}
+            className="min-h-32 resize-y bg-card leading-relaxed"
+          />
+          <div className="flex items-center gap-2">
+            <FormSubmit disabled={isLoading || tooLong} className="h-8 px-3.5">
+              Save
+            </FormSubmit>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={disableEditing}
+            >
+              Cancel
+            </Button>
+            <span
+              className={cn(
+                "ml-auto text-xs tabular-nums",
+                tooLong ? "text-destructive-text" : "text-muted-foreground"
+              )}
+            >
+              {length.toLocaleString("en-US")} /{" "}
+              {MAX_LENGTH.toLocaleString("en-US")}
+            </span>
           </div>
-        )}
-      </div>
-    </div>
+        </form>
+      ) : (
+        <button
+          type="button"
+          onClick={enableEditing}
+          className="min-h-20 w-full rounded-[10px] border bg-surface-2 px-3.5 py-3 text-left text-sm leading-relaxed whitespace-pre-wrap transition-colors hover:border-input"
+        >
+          {data.description || (
+            <span className="text-muted-foreground">
+              Add more detail to this card…
+            </span>
+          )}
+        </button>
+      )}
+    </section>
   );
 };
 
 Description.Skeleton = function DescriptionSkeleton() {
   return (
-    <div className="flex items-start gap-x-3 w-full">
-      <Skeleton className="h-6 w-6 bg-neutral-200" />
-      <div className="w-full">
-        <Skeleton className="h-6 mb-2 bg-neutral-200 w-24" />
-        <Skeleton className="h-[78px] bg-neutral-200 w-full" />
-      </div>
+    <div className="flex flex-col gap-2.5" aria-busy="true">
+      <Skeleton className="h-5 w-28" />
+      <Skeleton className="h-20 w-full rounded-[10px]" />
     </div>
   );
 };

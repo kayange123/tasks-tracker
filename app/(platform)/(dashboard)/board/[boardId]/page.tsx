@@ -1,4 +1,5 @@
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import ListContainer from "./_components/ListContainer";
@@ -16,12 +17,14 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
   const list: Array<ListWithCards> = await db.list.findMany({
     where: {
       boardId,
+      ...active,
       board: {
         orgId,
       },
     },
     include: {
       cards: {
+        where: active,
         orderBy: {
           order: "asc",
         },
@@ -33,9 +36,8 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
   });
 
   return (
-    <div className="p-4 h-full overflow-x-auto">
-      <ListContainer boardId={boardId} list={list} />
-    </div>
+    // Keyed by board so another board's lists never carry over
+    <ListContainer key={boardId} boardId={boardId} list={list} />
   );
 };
 

@@ -71,7 +71,9 @@ export const handler = async () => {
       url = stripeSession?.url || "";
     }
   } catch (error) {
-    return { error: "Something went wrong" };
+    // Usually a missing or invalid STRIPE_API_KEY; keep the cause in logs
+    console.error("Stripe redirect failed", error);
+    return { error: "Couldn’t open Stripe. Try again in a moment." };
   }
   revalidatePath(`/organization/${orgId}`);
 

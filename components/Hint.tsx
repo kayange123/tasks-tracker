@@ -24,7 +24,7 @@ const Hint = ({
       <Tooltip delayDuration={0}>
         <TooltipTrigger>{children}</TooltipTrigger>
         <TooltipContent
-          className="text-xs break-words max-w-[220px]"
+          className="text-xs wrap-break-word max-w-[220px]"
           side={side}
           sideOffset={sideOffset}
         >

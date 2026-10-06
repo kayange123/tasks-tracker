@@ -2,11 +2,11 @@
 
 import { updateBoard } from "@/actions/update-board/action";
 import FormInput from "@/components/form/FormInput";
-import { Button } from "@/components/ui/button";
 import { useAction } from "@/hooks/useActions";
 import { useRouter } from "next/navigation";
 import { ElementRef, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import { useEventListener } from "usehooks-ts";
+import { notify } from "@/lib/notify";
 
 interface BoardTitleFormProps {
   id: string;
@@ -22,13 +22,15 @@ const BoardTitleForm = ({ title, id }: BoardTitleFormProps) => {
 
   const { execute } = useAction(updateBoard, {
     onSuccess(data) {
-      toast.success(`Board "${title}" updated`);
+      notify.success("Board renamed", {
+        description: `Now called “${data?.title}”.`,
+      });
       router.refresh();
       setFormTitle(data?.title);
       disableEditing();
     },
     onError(error) {
-      toast.error("Error updating board");
+      notify.error("Couldn’t rename the board", { description: error });
     },
   });
   const enableEditing = () => {
@@ -42,6 +44,10 @@ const BoardTitleForm = ({ title, id }: BoardTitleFormProps) => {
   const onSubmit = (formData: FormData) => {
     const getTitle = formData.get("title") as string;
 
+    if (getTitle === formTitle) {
+      return disableEditing();
+    }
+
     execute({
       title: getTitle,
       id,
@@ -54,24 +60,35 @@ const BoardTitleForm = ({ title, id }: BoardTitleFormProps) => {
   const onBlur = () => {
     formRef?.current?.requestSubmit();
   };
+
+  useEventListener("keydown", (event: KeyboardEvent) => {
+    if (isEditing && event.key === "Escape") {
+      disableEditing();
+    }
+  });
   return isEditing ? (
-    <form action={onSubmit} ref={formRef} className="flex items-center gap-x-2">
+    <form action={onSubmit} ref={formRef} className="min-w-0">
       <FormInput
         ref={inputRef}
-        className="text-lg font-bold px-[7px] py-1 h-7 bg-transparent focus-visible:outline-none focus-visible:ring-transparent"
         id="title"
+        label="Board title"
+        labelHidden
         onBlur={onBlur}
         defaultValue={formTitle}
+        className="h-9 w-64 max-w-[50vw] text-lg font-semibold"
       />
     </form>
   ) : (
-    <Button
-      onClick={enableEditing}
-      variant="transparent"
-      className="font-bold h-auto w-auto text-lg p-1 px-2"
-    >
-      {formTitle}
-    </Button>
+    <h1 className="min-w-0">
+      <button
+        type="button"
+        onClick={enableEditing}
+        title="Rename board"
+        className="max-w-full truncate rounded-md px-1.5 py-1 text-left text-lg font-semibold tracking-tight transition-colors hover:bg-accent"
+      >
+        {formTitle}
+      </button>
+    </h1>
   );
 };
 

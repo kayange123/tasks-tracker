@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { InputType } from "./types";
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { revalidatePath } from "next/cache";
 import { createActions } from "@/lib/createActions";
 import { CopyList } from "./schema";
@@ -24,12 +25,13 @@ export const handler = async (data: InputType) => {
       where: {
         id,
         boardId,
+        ...active,
         board: {
           orgId,
         },
       },
       include: {
-        cards: true,
+        cards: { where: active },
       },
     });
 

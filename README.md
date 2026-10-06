@@ -30,6 +30,7 @@ This project involves producing Collaborative app for managing projects and reac
    | `STRIPE_API_KEY`                                                                                     | Stripe dashboard → Developers → API keys (secret key)                         |
    | `STRIPE_WEBHOOK_SECRET`                                                                              | Stripe webhook endpoint signing secret (see below)                            |
    | `NEXT_PUBLIC_APP_URL`                                                                                | Public URL of the app, e.g. `http://localhost:3000`                           |
+   | `CRON_SECRET`                                                                                        | Any long random string; Vercel Cron sends it to `/api/cron/purge`             |
 
 3. Push the Prisma schema to your database and start the dev server
 
@@ -47,6 +48,14 @@ stripe listen --forward-to localhost:3000/api/webhook
 ```
 
 and use the signing secret it prints as `STRIPE_WEBHOOK_SECRET`.
+
+### Deleted items
+
+Deleting a card, list or board can be undone from the toast. Deleted items are kept for 7 days, then a daily [Vercel Cron](https://vercel.com/docs/cron-jobs) job (`vercel.json`) removes them for good. Set `CRON_SECRET` in Vercel so only the cron job can call `/api/cron/purge`. Locally you can run it with:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/purge
+```
 
 ## Scripts
 

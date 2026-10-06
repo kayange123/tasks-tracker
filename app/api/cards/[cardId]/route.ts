@@ -1,4 +1,5 @@
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -15,6 +16,7 @@ export async function GET(
     const card = await db.card.findUnique({
       where: {
         id: cardId,
+        ...active,
         list: {
           board: {
             orgId,

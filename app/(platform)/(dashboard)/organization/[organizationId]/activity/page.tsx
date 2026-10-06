@@ -1,18 +1,32 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import Info from "../_components/Info";
-import { Separator } from "@/components/ui/separator";
 import ActivityList from "./_components/ActivityList";
 import { checkSubscription } from "@/lib/subscription";
 
-const ActivityPage = async () => {
+const ActivityPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) => {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
   const isPro = await checkSubscription();
+
   return (
-    <div className="w-full">
+    <div className="flex flex-col gap-8 pb-12">
       <Info isPro={isPro} />
-      <Separator className="mt-4" />
-      <Suspense fallback={<ActivityList.Skeleton />}>
-        <ActivityList />
-      </Suspense>
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-[15px] font-semibold">Activity</h2>
+          <p className="text-[13px] text-muted-foreground">
+            Every change to boards, lists and cards in this organization.
+          </p>
+        </div>
+        {/* Keyed by page so another page's entries never stay on screen */}
+        <Suspense key={page} fallback={<ActivityList.Skeleton />}>
+          <ActivityList page={page} />
+        </Suspense>
+      </section>
     </div>
   );
 };

@@ -13,29 +13,34 @@ import React, {
   forwardRef,
   useRef,
 } from "react";
-import toast from "react-hot-toast";
+import { notify } from "@/lib/notify";
+import { submitForm } from "@/lib/submitForm";
 import { useEventListener, useOnClickOutside } from "usehooks-ts";
 
 interface CardFormProps {
   listId: string;
+  onCreated?: (cardId: string) => void;
   enableEditing: () => void;
   disableEditing: () => void;
   isEditing: boolean;
 }
 
 const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
-  ({ listId, enableEditing, disableEditing, isEditing }, ref) => {
+  ({ listId, onCreated, enableEditing, disableEditing, isEditing }, ref) => {
     const params = useParams();
     const formRef = useRef<ElementRef<"form">>(null);
 
-    const { execute, fieldErrors } = useAction(createCard, {
+    const { execute, fieldErrors, isLoading } = useAction(createCard, {
       onSuccess(data) {
-        toast.success(`card "${data?.title}" created`);
+        notify.success("Card created", {
+          description: `“${data?.title}” was added to the list.`,
+        });
         formRef.current?.reset();
+        onCreated?.(data.id);
         disableEditing();
       },
       onError(error) {
-        toast.error(error);
+        notify.error(error);
       },
     });
 
@@ -48,12 +53,12 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
     // usehooks-ts types predate React 19 nullable refs
     useOnClickOutside(
       formRef as React.RefObject<HTMLFormElement>,
-      disableEditing,
+      disableEditing
     );
     useEventListener("keydown", onKeyDown);
 
     const onTextAreaKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (
-      e,
+      e
     ) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -70,41 +75,50 @@ const CardForm = forwardRef<HTMLTextAreaElement, CardFormProps>(
     return isEditing ? (
       <form
         ref={formRef}
-        action={onSubmit}
-        className="m-1 py-0.5 px-1 space-y-4"
+        onSubmit={submitForm(onSubmit)}
+        className="flex flex-col gap-2"
       >
         <FormTextArea
+          disabled={isLoading}
           id="title"
+          label="Card title"
+          labelHidden
           onKeyDown={onTextAreaKeyDown}
-          placeholder="Enter title for the card"
+          placeholder="Enter a title for this card…"
           ref={ref}
           errors={fieldErrors}
+          className="min-h-16 bg-card"
         />
-        <div className="flex items-center justify-between gap-x-1">
-          <FormSubmit>Add Card</FormSubmit>
+        <div className="flex items-center gap-1.5">
+          <FormSubmit disabled={isLoading} className="h-8 px-3.5">
+            Add card
+          </FormSubmit>
           <Button
+            type="button"
             onClick={disableEditing}
-            size="sm"
             variant="ghost"
-            className="p-2"
+            size="icon-sm"
+            aria-label="Cancel"
+            className="text-muted-foreground"
           >
-            <X className="h-5 w-5 text-neutral-700" />
+            <X />
           </Button>
+          <span className="ml-auto text-xs text-muted-foreground">
+            Enter to add
+          </span>
         </div>
       </form>
     ) : (
-      <div className="pt-2 px-2">
-        <Button
-          onClick={enableEditing}
-          variant="ghost"
-          className="h-auto px-2 py-1.5 w-full justify-center text-black  text-sm"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Card
-        </Button>
-      </div>
+      <Button
+        onClick={enableEditing}
+        variant="ghost"
+        className="h-9 w-full justify-start gap-2 px-2.5 text-[13px] font-medium text-muted-foreground"
+      >
+        <Plus />
+        Add a card
+      </Button>
     );
-  },
+  }
 );
 CardForm.displayName = "CardForm";
 

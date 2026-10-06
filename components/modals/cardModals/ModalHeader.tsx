@@ -6,10 +6,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAction } from "@/hooks/useActions";
 import { CardWithList } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
-import { Layout } from "lucide-react";
+import { PanelsTopLeft } from "lucide-react";
 import { useParams } from "next/navigation";
-import { ElementRef, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import { useRef } from "react";
+import { notify } from "@/lib/notify";
+import { submitForm } from "@/lib/submitForm";
 
 interface ModalHeaderProps {
   data: CardWithList;
@@ -18,10 +19,9 @@ interface ModalHeaderProps {
 const ModalHeader = ({ data }: ModalHeaderProps) => {
   const query = useQueryClient();
   const params = useParams();
-  const inputRef = useRef<ElementRef<"input">>(null);
-  const [title, setTitle] = useState(data?.title);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const { execute } = useAction(updateCard, {
+  const { execute, fieldErrors } = useAction(updateCard, {
     onSuccess(card) {
       query.invalidateQueries({
         queryKey: ["card", data?.id],
@@ -30,19 +30,31 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
         queryKey: ["card-log", data?.id],
       });
 
-      toast.success(`Renamed to "${card?.title}"`);
-      setTitle(card?.title);
+      notify.success("Card renamed", {
+        description: `Now called “${card?.title}”.`,
+      });
+    },
+    onError(error) {
+      notify.error("Couldn’t rename the card", { description: error });
     },
   });
   const onBlur = () => {
     inputRef.current?.form?.requestSubmit();
   };
 
+  // Escape restores the saved title; the blur that follows saves nothing
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Escape") {
+      event.currentTarget.value = data.title;
+      event.currentTarget.blur();
+    }
+  };
+
   const onSubmit = (form: FormData) => {
     const formTitle = form.get("title") as string;
     const boardId = params.boardId as string;
 
-    if (formTitle === title) return;
+    if (formTitle === data.title) return;
 
     execute({
       title: formTitle,
@@ -51,20 +63,31 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
     });
   };
   return (
-    <div className="flex items-start gap-x-3 mb-6 w-full">
-      <Layout className="h-5 w-5 mt-1 text-neutral-700" />
-      <div className="w-full">
-        <form action={onSubmit}>
+    // Right padding keeps the title clear of the dialog's close button
+    <div className="flex items-start gap-3.5 pr-8">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[9px] bg-primary-soft text-primary-text">
+        <PanelsTopLeft aria-hidden className="size-4.5" />
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <form onSubmit={submitForm(onSubmit)}>
           <FormInput
+            // Remount when the saved title changes so the field never
+            // keeps a value from before the latest refetch
+            key={data.title}
             ref={inputRef}
-            onBlur={onBlur}
             id="title"
-            defaultValue={title}
-            className="font-semibold text-xl px-1 text-neutral-700 bg-transparent relative -left-1.5 border-transparent w-[95%] bg-white focus-visible:border-input mb-0.5 truncate"
+            label="Card title"
+            labelHidden
+            defaultValue={data.title}
+            onBlur={onBlur}
+            onKeyDown={onKeyDown}
+            errors={fieldErrors}
+            className="-ml-1.5 h-auto border-transparent bg-transparent px-1.5 py-0.5 text-xl font-semibold md:text-xl tracking-tight shadow-none hover:border-input focus-visible:border-ring dark:bg-transparent"
           />
         </form>
-        <p className="text-sm text-muted-foreground">
-          In list <span className="underline">{data?.list?.title}</span>
+        <p className="text-[13px] text-muted-foreground">
+          in list{" "}
+          <span className="font-medium text-foreground">{data.list.title}</span>
         </p>
       </div>
     </div>
@@ -73,11 +96,11 @@ const ModalHeader = ({ data }: ModalHeaderProps) => {
 
 ModalHeader.Skeleton = function ModalHeaderSkeleton() {
   return (
-    <div className="flex items-start gap-x-3 mb-6">
-      <Skeleton className="h-6 w-6 mt-1 bg-neutral-200" />
-      <div className="">
-        <Skeleton className="w-24 h-6 mb-1 bg-neutral-200" />
-        <Skeleton className="w-12 h-4 bg-neutral-200" />
+    <div className="flex items-start gap-3.5" aria-busy="true">
+      <Skeleton className="size-9 shrink-0 rounded-[9px]" />
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-6 w-56" />
+        <Skeleton className="h-4 w-28" />
       </div>
     </div>
   );

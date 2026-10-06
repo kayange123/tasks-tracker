@@ -3,12 +3,12 @@ import { z } from "zod";
 export const CreateList = z.object({
   title: z
     .string({
-      required_error: "Title is required",
-      invalid_type_error: "Title is invalid",
+      required_error: "Enter a title.",
+      invalid_type_error: "Enter a title.",
     })
     .min(3, {
-      message: "Title should be more than 3 characters",
+      message: "Title must be at least 3 characters.",
     })
-    .max(100, { message: "Title should be at most 100 characters" }),
+    .max(100, { message: "Title must be at most 100 characters." }),
   boardId: z.string(),
 });

@@ -8,85 +8,97 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
 import NavItem, { TOrganization } from "./NavItem";
+import PlanMeter from "./PlanMeter";
+import { useParams } from "next/navigation";
 
 interface SidebarProps {
   storageKey?: string;
 }
 const Sidebar = ({ storageKey }: SidebarProps) => {
-  const [expanded, setExpanded] = useLocalStorage<Record<string, any>>(
+  const [expanded, setExpanded] = useLocalStorage<Record<string, boolean>>(
     storageKey ?? "t-sidebar-state",
     {},
     // Read storage after mount so server and client render the same markup
     { initializeWithValue: false }
   );
-  const { organization: activeOrganization, isLoaded: isLoadedOrg } =
-    useOrganization();
+  // Highlight the organization being viewed, not the session's active one
+  const { organizationId } = useParams<{ organizationId?: string }>();
+  const { isLoaded: isLoadedOrg } = useOrganization();
   const { userMemberships, isLoaded: isLoadedOrgList } = useOrganizationList({
     userMemberships: {
       infinite: true,
     },
   });
-  const defaultAccordionValues: string[] = Object.keys(expanded).reduce(
-    (acc: string[], key: string) => {
-      if (expanded[key]) {
-        acc.push(key);
-      }
-      return acc;
-    },
-    []
+
+  if (!isLoadedOrg || !isLoadedOrgList || userMemberships.isLoading) {
+    return <Sidebar.Skeleton />;
+  }
+
+  const organizations = (userMemberships.data ?? []).map(
+    ({ organization }) => organization as TOrganization
   );
 
-  const onExpand = (key: string) => {
-    setExpanded((prev) => ({ ...prev, [key]: !expanded[key] }));
+  // The organization in the URL starts expanded unless it was collapsed
+  const openValues = organizations
+    .filter(({ id }) => expanded[id] ?? id === organizationId)
+    .map(({ id }) => id);
+
+  const onValueChange = (values: string[]) => {
+    setExpanded(
+      Object.fromEntries(
+        organizations.map(({ id }) => [id, values.includes(id)])
+      )
+    );
   };
 
-  if (!isLoadedOrg || !isLoadedOrgList || userMemberships.isLoading)
-    return (
-      <>
-        <div className="flex items-center justify-between mb-2">
-          <Skeleton className="h-10 w-[50%]" />
-          <Skeleton className="h-10 w-10" />
-        </div>
-        <div className="space-y-2">
-          <NavItem.Skeleton />
-          <NavItem.Skeleton />
-          <NavItem.Skeleton />
-        </div>
-      </>
-    );
-
   return (
-    <>
-      <div className="text-sm font-medium flex items-center mb-1">
-        <span className="pl-">Workspaces</span>
+    <div className="flex h-full flex-col px-3 py-4">
+      <div className="flex items-center justify-between px-2 pb-2">
+        <span className="text-xs font-medium text-muted-foreground">
+          Organizations
+        </span>
         <Button
-          size="icon"
           asChild
-          type="button"
           variant="ghost"
-          className="ml-auto"
+          size="icon-sm"
+          className="text-muted-foreground"
         >
-          <Link href="/select-org">
-            <Plus className="h-4 w-4" />
+          <Link href="/select-org" aria-label="Add organization">
+            <Plus />
           </Link>
         </Button>
       </div>
       <Accordion
         type="multiple"
-        defaultValue={defaultAccordionValues}
-        className="space-y-2"
+        value={openValues}
+        onValueChange={onValueChange}
+        className="flex flex-col gap-0.5"
       >
-        {userMemberships?.data?.map(({ organization }) => (
+        {organizations.map((organization) => (
           <NavItem
             key={organization.id}
-            isActive={activeOrganization?.id == organization.id}
-            isExpanded={expanded[organization?.id]}
-            organization={organization as TOrganization}
-            onExpand={onExpand}
+            isActive={organizationId === organization.id}
+            organization={organization}
           />
         ))}
       </Accordion>
-    </>
+      <div className="mt-auto pt-4">
+        <PlanMeter />
+      </div>
+    </div>
+  );
+};
+
+Sidebar.Skeleton = function SidebarSkeleton() {
+  return (
+    <div className="flex h-full flex-col gap-2 px-3 py-4" aria-busy="true">
+      <div className="flex items-center justify-between px-2 pb-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="size-8" />
+      </div>
+      <NavItem.Skeleton />
+      <NavItem.Skeleton />
+    </div>
   );
 };
 

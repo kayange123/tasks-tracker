@@ -7,26 +7,37 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/webhook(.*)",
+  // Authenticated with CRON_SECRET instead of a Clerk session
+  "/api/cron(.*)",
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
-  const { userId, orgId, redirectToSignIn } = await auth();
-  const isPublic = isPublicRoute(req);
+export default clerkMiddleware(
+  async (auth, req) => {
+    const { userId, orgId, redirectToSignIn } = await auth();
+    const isPublic = isPublicRoute(req);
 
-  // Signed-in users skip the landing page and go to their organization
-  if (userId && isPublic && !req.nextUrl.pathname.startsWith("/api/")) {
-    const path = orgId ? `/organization/${orgId}` : "/select-org";
-    return NextResponse.redirect(new URL(path, req.url));
-  }
+    // Signed-in users skip the landing page and go to their organization
+    if (userId && isPublic && !req.nextUrl.pathname.startsWith("/api/")) {
+      const path = orgId ? `/organization/${orgId}` : "/select-org";
+      return NextResponse.redirect(new URL(path, req.url));
+    }
 
-  if (!userId && !isPublic) {
-    return redirectToSignIn({ returnBackUrl: req.url });
-  }
+    if (!userId && !isPublic) {
+      return redirectToSignIn({ returnBackUrl: req.url });
+    }
 
-  if (userId && !orgId && req.nextUrl.pathname !== "/select-org") {
-    return NextResponse.redirect(new URL("/select-org", req.url));
+    if (userId && !orgId && req.nextUrl.pathname !== "/select-org") {
+      return NextResponse.redirect(new URL("/select-org", req.url));
+    }
+  },
+  {
+    // Activate the organization in the URL before rendering, so org pages
+    // never render with the previously active organization
+    organizationSyncOptions: {
+      organizationPatterns: ["/organization/:id", "/organization/:id/(.*)"],
+    },
   }
-});
+);
 
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],

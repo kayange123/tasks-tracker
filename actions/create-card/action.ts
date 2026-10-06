@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { revalidatePath } from "next/cache";
 import { createActions } from "@/lib/createActions";
 import { CreateCard } from "./schema";
@@ -22,6 +23,7 @@ export const handler = async (data: InputType): Promise<ReturnType> => {
     const list = await db.list.findUnique({
       where: {
         id: listId,
+        ...active,
         board: {
           orgId,
         },

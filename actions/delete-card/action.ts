@@ -1,15 +1,16 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { InputType } from "./types";
+import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/prisma";
+import { active } from "@/lib/softDelete";
 import { revalidatePath } from "next/cache";
 import { createActions } from "@/lib/createActions";
 import { DeleteCard } from "./schema";
 import { createAuditLog } from "@/lib/createAuditLogs";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
-export const handler = async (data: InputType) => {
+export const handler = async (data: InputType): Promise<ReturnType> => {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return {
@@ -19,31 +20,34 @@ export const handler = async (data: InputType) => {
   const { id, boardId } = data;
   let card;
   try {
-    card = await db.card.delete({
+    // Soft delete so the card can be restored from the undo toast
+    card = await db.card.update({
       where: {
         id,
+        ...active,
         list: {
           board: {
             orgId,
           },
         },
       },
-    });
-    await createAuditLog({
-      entityTitle: card.title,
-      entityType: ENTITY_TYPE.CARD,
-      entityId: card.id,
-      action: ACTION.DELETE,
+      data: { deletedAt: new Date() },
     });
   } catch (error) {
-    //in case of error, return an error object and exit
     return {
       error: "Failed to delete card",
     };
   }
-  //let next update the page
+
+  await createAuditLog({
+    entityTitle: card.title,
+    entityType: ENTITY_TYPE.CARD,
+    entityId: card.id,
+    action: ACTION.DELETE,
+  });
+
   revalidatePath(`/board/${boardId}`);
-  return { data: card }; // return the list and exit
+  return { data: card };
 };
 
 export const deleteCard = createActions(DeleteCard, handler);
