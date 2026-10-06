@@ -6,6 +6,7 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  // Signed webhooks: Stripe (/api/webhook) and Clerk (/api/webhooks/clerk)
   "/api/webhook(.*)",
   // Authenticated with CRON_SECRET instead of a Clerk session
   "/api/cron(.*)",
