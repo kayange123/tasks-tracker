@@ -1,11 +1,12 @@
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
+import { OrganizationSwitcher } from "@clerk/nextjs";
 import { Plus } from "lucide-react";
 import React from "react";
 import MobileSidebar from "./MobileSidebar";
 import FormPopover from "@/components/form/form-popover";
 import ThemeToggle from "@/components/ThemeToggle";
+import AccountButton from "@/components/account/AccountButton";
 
 const Navbar = () => {
   return (
@@ -36,13 +37,7 @@ const Navbar = () => {
           </Button>
         </FormPopover>
         <ThemeToggle />
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "size-8",
-            },
-          }}
-        />
+        <AccountButton />
       </div>
     </nav>
   );
