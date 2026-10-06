@@ -1,9 +1,15 @@
 import { OrganizationProfile } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import Info from "../_components/Info";
+import OrganizationData from "./_components/OrganizationData";
 import { checkSubscription } from "@/lib/subscription";
+import { isOrgAdmin } from "@/lib/orgAdmin";
 
 const SettingsPage = async () => {
-  const isPro = await checkSubscription();
+  const [{ orgId, orgRole }, isPro] = await Promise.all([
+    auth(),
+    checkSubscription(),
+  ]);
 
   return (
     <div className="flex flex-col gap-8 pb-12">
@@ -29,6 +35,13 @@ const SettingsPage = async () => {
           }}
         />
       </section>
+      {orgId && (
+        <OrganizationData
+          orgId={orgId}
+          isAdmin={isOrgAdmin(orgRole)}
+          isPro={isPro}
+        />
+      )}
     </div>
   );
 };
