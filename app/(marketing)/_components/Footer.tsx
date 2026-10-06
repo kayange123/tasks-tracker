@@ -1,30 +1,20 @@
-import Logo from "@/components/Logo";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import React from "react";
-
-const appName = "Taskier";
 
 const Footer = () => {
   return (
-    <div className="fixed bottom-0 w-full py-4 bg-slate-100">
-      <div className="md:max-w-(--breakpoint-xl) mx-auto flex flex-wrap items-center w-full justify-between">
-        <Logo />
-        <div className="md:block md:w-auto flex items-center justify-between w-full">
-          <Button size="sm" variant="link" className="text-xs sm:text-sm">
-            Privacy policy
-          </Button>
-          <Button size="sm" variant="link" className="text-xs sm:text-sm">
-            Terms of services
-          </Button>
-          <Button size="sm" variant="link" className="text-xs sm:text-sm">
-            <Link href="https://bit.ly/kayange" target="_blank">
-              Meet the developer
-            </Link>
-          </Button>
-        </div>
+    <footer className="border-t">
+      <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between gap-4 px-4 text-[13px] text-muted-foreground md:px-8">
+        <span>© {new Date().getFullYear()} Taskier</span>
+        <Link
+          href="https://bit.ly/kayange"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-sm transition-colors hover:text-foreground"
+        >
+          Meet the developer
+        </Link>
       </div>
-    </div>
+    </footer>
   );
 };
 
