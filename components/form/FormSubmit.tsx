@@ -14,8 +14,7 @@ interface FormSubmitProps {
     | "destructive"
     | "outline"
     | "ghost"
-    | "link"
-    | "primary";
+    | "link";
 }
 
 const FormSubmit = ({

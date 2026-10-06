@@ -2,13 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
-import { features } from "@/config/site";
 import { useTheme } from "next-themes";
 
 const ThemeToggle = () => {
   const { resolvedTheme, setTheme } = useTheme();
-
-  if (!features.themeSwitching) return null;
 
   // Both icons render and CSS picks one, so server and client markup match
   // before the theme is known

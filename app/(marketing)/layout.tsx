@@ -4,14 +4,10 @@ import Footer from "./_components/Footer";
 
 const MarketingLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="h-full bg-slate-100">
-      <header>
-        <Navbar />
-      </header>
-      <main className="pt-40 pb-20 bg-slate-100">{children}</main>
-      <footer>
-        <Footer />
-      </footer>
+    <div className="flex min-h-full flex-col">
+      <Navbar />
+      <main className="flex-1">{children}</main>
+      <Footer />
     </div>
   );
 };

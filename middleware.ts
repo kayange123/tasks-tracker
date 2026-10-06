@@ -9,15 +9,26 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhook(.*)",
   // Authenticated with CRON_SECRET instead of a Clerk session
   "/api/cron(.*)",
+  "/privacy",
+  "/terms",
 ]);
+
+// Readable whether signed in or not, with or without an organization
+const isLegalRoute = createRouteMatcher(["/privacy", "/terms"]);
 
 export default clerkMiddleware(
   async (auth, req) => {
     const { userId, orgId, redirectToSignIn } = await auth();
     const isPublic = isPublicRoute(req);
+    const isLegal = isLegalRoute(req);
 
     // Signed-in users skip the landing page and go to their organization
-    if (userId && isPublic && !req.nextUrl.pathname.startsWith("/api/")) {
+    if (
+      userId &&
+      isPublic &&
+      !isLegal &&
+      !req.nextUrl.pathname.startsWith("/api/")
+    ) {
       const path = orgId ? `/organization/${orgId}` : "/select-org";
       return NextResponse.redirect(new URL(path, req.url));
     }
@@ -26,7 +37,12 @@ export default clerkMiddleware(
       return redirectToSignIn({ returnBackUrl: req.url });
     }
 
-    if (userId && !orgId && req.nextUrl.pathname !== "/select-org") {
+    if (
+      userId &&
+      !orgId &&
+      !isLegal &&
+      req.nextUrl.pathname !== "/select-org"
+    ) {
       return NextResponse.redirect(new URL("/select-org", req.url));
     }
   },
