@@ -17,6 +17,9 @@ const isPublicRoute = createRouteMatcher([
 // Readable whether signed in or not, with or without an organization
 const isLegalRoute = createRouteMatcher(["/privacy", "/terms"]);
 
+// About the signed-in person, so no active organization is needed
+const isPersonalRoute = createRouteMatcher(["/api/me(.*)"]);
+
 export default clerkMiddleware(
   async (auth, req) => {
     const { userId, orgId, redirectToSignIn } = await auth();
@@ -42,6 +45,7 @@ export default clerkMiddleware(
       userId &&
       !orgId &&
       !isLegal &&
+      !isPersonalRoute(req) &&
       req.nextUrl.pathname !== "/select-org"
     ) {
       return NextResponse.redirect(new URL("/select-org", req.url));
