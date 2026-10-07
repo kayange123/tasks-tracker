@@ -10,6 +10,7 @@ export const clerkClientMock = {
     getOrganization: vi.fn(),
     deleteOrganization: vi.fn(),
     getOrganizationMembershipList: vi.fn(),
+    getOrganizationList: vi.fn(),
   },
   users: {
     getUser: vi.fn(),
