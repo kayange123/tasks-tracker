@@ -19,7 +19,7 @@ const Footer = () => {
             Terms
           </Link>
           <Link
-            href="https://bit.ly/kayange"
+            href="https://kayange.dev"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-sm transition-colors hover:text-foreground"

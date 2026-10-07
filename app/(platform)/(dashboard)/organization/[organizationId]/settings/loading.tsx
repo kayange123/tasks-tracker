@@ -12,6 +12,14 @@ export default function Loading() {
         </div>
         <Skeleton className="h-[520px] rounded-xl" />
       </section>
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12" />
+          <Skeleton className="h-4 w-80 max-w-full" />
+        </div>
+        <Skeleton className="h-36 rounded-xl" />
+        <Skeleton className="h-24 rounded-xl" />
+      </section>
     </div>
   );
 }

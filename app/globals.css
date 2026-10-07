@@ -194,3 +194,14 @@
     animation: none;
   }
 }
+
+/*
+  Organization settings has its own Delete organization, which explains what
+  is removed and cancels billing. Hide Clerk's duplicate; Leave organization
+  shares its element classes, so match the delete row by its text key.
+*/
+.cl-profileSection__organizationDanger:has(
+    [data-localization-key*="dangerSection.deleteOrganization"]
+  ) {
+  display: none;
+}

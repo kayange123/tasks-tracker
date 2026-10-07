@@ -21,5 +21,6 @@ export const dbMock = {
   auditLog: model(),
   orgLimit: model(),
   orgSubscription: model(),
+  adminAction: model(),
   $transaction: vi.fn(),
 };

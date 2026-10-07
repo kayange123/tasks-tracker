@@ -6,6 +6,7 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  // Signed webhooks: Stripe (/api/webhook) and Clerk (/api/webhooks/clerk)
   "/api/webhook(.*)",
   // Authenticated with CRON_SECRET instead of a Clerk session
   "/api/cron(.*)",
@@ -15,6 +16,14 @@ const isPublicRoute = createRouteMatcher([
 
 // Readable whether signed in or not, with or without an organization
 const isLegalRoute = createRouteMatcher(["/privacy", "/terms"]);
+
+// About the signed-in person, or the operator console: no active
+// organization is needed
+const isOrganizationFreeRoute = createRouteMatcher([
+  "/api/me(.*)",
+  "/admin(.*)",
+  "/api/admin(.*)",
+]);
 
 export default clerkMiddleware(
   async (auth, req) => {
@@ -41,6 +50,7 @@ export default clerkMiddleware(
       userId &&
       !orgId &&
       !isLegal &&
+      !isOrganizationFreeRoute(req) &&
       req.nextUrl.pathname !== "/select-org"
     ) {
       return NextResponse.redirect(new URL("/select-org", req.url));
