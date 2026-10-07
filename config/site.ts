@@ -9,5 +9,5 @@ export const legalConfig = {
   // Address for privacy requests and questions about the terms
   contactEmail: "info@kayange.dev",
   governingLaw: "the United Republic of Tanzania",
-  effectiveDate: "October 6, 2026",
+  effectiveDate: "October 7, 2026",
 };

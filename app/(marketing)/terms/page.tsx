@@ -96,6 +96,10 @@ const TermsPage = () => {
             time in the billing portal; cancellation takes effect at the end of
             the current billing period.
           </li>
+          <li>
+            Deleting an organization cancels its subscription immediately,
+            without a refund for the rest of the billing period.
+          </li>
           <li>Except where required by law, payments are non-refundable.</li>
           <li>
             If we change prices, we&apos;ll tell you in advance and the new
@@ -116,7 +120,8 @@ const TermsPage = () => {
 
       <LegalSection id="termination" title="Ending your use">
         <p>
-          You can stop using Taskier at any time. We may suspend or end access
+          You can stop using Taskier at any time, and delete your account
+          from Data &amp; privacy in your account settings. We may suspend or end access
           for accounts that violate these terms or put the service or other
           users at risk, and will tell you when we reasonably can.
         </p>
