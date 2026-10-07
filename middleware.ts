@@ -17,8 +17,13 @@ const isPublicRoute = createRouteMatcher([
 // Readable whether signed in or not, with or without an organization
 const isLegalRoute = createRouteMatcher(["/privacy", "/terms"]);
 
-// About the signed-in person, so no active organization is needed
-const isPersonalRoute = createRouteMatcher(["/api/me(.*)"]);
+// About the signed-in person, or the operator console: no active
+// organization is needed
+const isOrganizationFreeRoute = createRouteMatcher([
+  "/api/me(.*)",
+  "/admin(.*)",
+  "/api/admin(.*)",
+]);
 
 export default clerkMiddleware(
   async (auth, req) => {
@@ -45,7 +50,7 @@ export default clerkMiddleware(
       userId &&
       !orgId &&
       !isLegal &&
-      !isPersonalRoute(req) &&
+      !isOrganizationFreeRoute(req) &&
       req.nextUrl.pathname !== "/select-org"
     ) {
       return NextResponse.redirect(new URL("/select-org", req.url));
