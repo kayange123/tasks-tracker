@@ -103,3 +103,17 @@ model OrgSubscription{
   stripePriceId         String? @map(name: "stripe_price_id")
   stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
 }
+
+// Exports and deletions done from the operator console, kept as a record
+// of how privacy requests were handled
+model AdminAction {
+  id            String   @id @default(cuid()) @map("_id")
+  adminUserId   String
+  // e.g. EXPORT_USER, DELETE_ORGANIZATION
+  action        String
+  targetType    String
+  targetId      String
+  details       String?
+
+  createdAt     DateTime @default(now())
+}
