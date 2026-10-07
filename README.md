@@ -54,6 +54,16 @@ and use the signing secret it prints as `STRIPE_WEBHOOK_SECRET`.
 
 In the Clerk dashboard (Webhooks → Add endpoint), point an endpoint at `/api/webhooks/clerk` with the `organization.deleted` and `user.deleted` events, and set its signing secret as `CLERK_WEBHOOK_SIGNING_SECRET`. When Clerk deletes an organization, its boards, lists, cards, activity and plan records are removed and its Stripe subscription is cancelled. When Clerk deletes a user, their activity entries are kept but anonymized as "Deleted user".
 
+### Data export and deletion
+
+- **Organization admins** can download an organization's boards, lists, cards and activity as JSON or a CSV zip, and delete the organization, from its Settings page. Deleting cancels any Pro subscription.
+- **Everyone** can download their own data and delete their account from Account → Data & privacy. Deletion is blocked while the person is the only admin of an organization with other members; organizations where they're the only member are deleted with the account, and their activity elsewhere is shown as "Deleted user".
+- **Operators** can handle requests at `/admin`: find users and organizations, export or delete them, and purge data left by organizations deleted in Clerk. Every export and deletion is recorded. Everyone else gets a 404.
+
+To make someone an operator, open the user in the Clerk dashboard and set their **public metadata** to `{ "role": "admin" }`. Users can't change public metadata themselves. Optionally, add `{ "metadata": "{{user.public_metadata}}" }` to the session token (Sessions → Customize session token) so the role is read from the token instead of fetched from Clerk on each console request; role changes then apply when the token refreshes, within about a minute.
+
+In the Clerk dashboard, consider removing the "Delete organization" permission from the admin role and turning off self-service account deletion, so people use Taskier's flows, which explain what will be removed and check for organizations that would be left without an admin. The Clerk webhook still cleans up after deletions made in Clerk.
+
 ### Deleted items
 
 Deleting a card, list or board can be undone from the toast. Deleted items are kept for 7 days, then a daily [Vercel Cron](https://vercel.com/docs/cron-jobs) job (`vercel.json`) removes them for good. Set `CRON_SECRET` in Vercel so only the cron job can call `/api/cron/purge`. Locally you can run it with:
