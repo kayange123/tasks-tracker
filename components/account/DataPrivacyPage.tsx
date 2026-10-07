@@ -108,7 +108,7 @@ const DeleteAccount = () => {
           <div className="flex flex-col gap-1.5">
             <Label
               htmlFor="account-confirmation"
-              className="text-[13px] font-medium"
+              className="block text-[13px] leading-snug font-medium"
             >
               Type <span className="font-semibold">{CONFIRMATION_PHRASE}</span>{" "}
               to confirm
