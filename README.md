@@ -31,6 +31,7 @@ This project involves producing Collaborative app for managing projects and reac
    | `STRIPE_WEBHOOK_SECRET`                                                                              | Stripe webhook endpoint signing secret (see below)                            |
    | `NEXT_PUBLIC_APP_URL`                                                                                | Public URL of the app, e.g. `http://localhost:3000`                           |
    | `CRON_SECRET`                                                                                        | Any long random string; Vercel Cron sends it to `/api/cron/purge`             |
+   | `CLERK_WEBHOOK_SIGNING_SECRET`                                                                       | Clerk webhook endpoint signing secret (see below)                             |
 
 3. Push the Prisma schema to your database and start the dev server
 
@@ -48,6 +49,10 @@ stripe listen --forward-to localhost:3000/api/webhook
 ```
 
 and use the signing secret it prints as `STRIPE_WEBHOOK_SECRET`.
+
+### Clerk webhooks
+
+In the Clerk dashboard (Webhooks → Add endpoint), point an endpoint at `/api/webhooks/clerk` with the `organization.deleted` and `user.deleted` events, and set its signing secret as `CLERK_WEBHOOK_SIGNING_SECRET`. When Clerk deletes an organization, its boards, lists, cards, activity and plan records are removed and its Stripe subscription is cancelled. When Clerk deletes a user, their activity entries are kept but anonymized as "Deleted user".
 
 ### Deleted items
 

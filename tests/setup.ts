@@ -6,8 +6,14 @@ vi.mock("@/lib/prisma", async () => ({
   db: (await import("./mocks/db")).dbMock,
 }));
 vi.mock("@clerk/nextjs/server", async () => {
-  const { authMock, currentUserMock } = await import("./mocks/services");
-  return { auth: authMock, currentUser: currentUserMock };
+  const { authMock, clerkClientMock, currentUserMock } = await import(
+    "./mocks/services"
+  );
+  return {
+    auth: authMock,
+    currentUser: currentUserMock,
+    clerkClient: async () => clerkClientMock,
+  };
 });
 vi.mock("@/lib/stripe", async () => ({
   stripe: (await import("./mocks/services")).stripeMock,
