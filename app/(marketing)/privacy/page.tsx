@@ -146,20 +146,43 @@ const PrivacyPage = () => {
           </li>
         </ul>
         <p>
-          Deleting an organization or your account doesn&apos;t yet remove
-          organization content automatically. To have it deleted, contact us at{" "}
-          <ContactEmail />.
+          When an organization is deleted, its boards, lists, cards, activity
+          history and plan records are permanently removed, and any Pro
+          subscription is cancelled right away. When an account is deleted, the
+          account is removed, organizations where that person was the only
+          member are deleted with it, and their entries in other
+          organizations&apos; activity history are kept but shown as
+          &ldquo;Deleted user&rdquo;, without their name or photo.
         </p>
       </LegalSection>
 
       <LegalSection id="your-choices" title="Your choices and rights">
         <p>
           You can update your name, email and profile image in your account
-          settings, and edit or delete your content at any time. Depending on
-          where you live, you may also have the right to access, correct, export
-          or delete your information, or to object to how we use it. To make a
-          request, contact us at <ContactEmail />. We may need to verify your
-          identity first.
+          settings, and edit or delete your content at any time.
+        </p>
+        <ul>
+          <li>
+            <strong>Download your data:</strong> in your account, open Data
+            &amp; privacy to download your profile, memberships and activity as
+            JSON or CSV files.
+          </li>
+          <li>
+            <strong>Delete your account:</strong> also in Data &amp; privacy. If
+            you&apos;re the only admin of an organization with other members,
+            make someone else an admin or delete the organization first.
+          </li>
+          <li>
+            <strong>Organizations:</strong> organization admins can export all
+            of an organization&apos;s boards, lists, cards and activity, or
+            delete the organization, from its settings.
+          </li>
+        </ul>
+        <p>
+          Depending on where you live, you may also have the right to access,
+          correct, export or delete your information, or to object to how we use
+          it. For anything you can&apos;t do yourself, contact us at{" "}
+          <ContactEmail />. We may need to verify your identity first.
         </p>
       </LegalSection>
 
