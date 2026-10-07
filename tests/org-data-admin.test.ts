@@ -136,3 +136,14 @@ describe("delete organization", () => {
     expect((await deleteOrganization(input)).data).toEqual({ name: "Acme" });
   });
 });
+
+describe("isOrgAdmin", () => {
+  it("accepts current and legacy Clerk admin role keys", async () => {
+    const { isOrgAdmin } = await import("@/lib/orgAdmin");
+    expect(isOrgAdmin("org:admin")).toBe(true);
+    expect(isOrgAdmin("admin")).toBe(true);
+    expect(isOrgAdmin("org:member")).toBe(false);
+    expect(isOrgAdmin("basic_member")).toBe(false);
+    expect(isOrgAdmin(null)).toBe(false);
+  });
+});
