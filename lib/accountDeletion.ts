@@ -63,10 +63,15 @@ export class AccountDeletionBlockedError extends Error {
 
 // Deletes a person's account: the organizations only they belong to, their
 // identity on activity entries, and finally the Clerk user. Re-checks the
-// plan so nothing changed since the person confirmed.
-export const deleteAccount = async (userId: string) => {
+// plan so nothing changed since the person confirmed. Operators handling a
+// privacy request can go ahead even if organizations are left without an
+// admin.
+export const deleteAccount = async (
+  userId: string,
+  { allowBlocked = false }: { allowBlocked?: boolean } = {},
+) => {
   const plan = await getAccountDeletionPlan(userId);
-  if (plan.blockingOrganizations.length > 0) {
+  if (!allowBlocked && plan.blockingOrganizations.length > 0) {
     throw new AccountDeletionBlockedError(plan.blockingOrganizations);
   }
 
